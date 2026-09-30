@@ -1,0 +1,2417 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GovInnovate Maharashtra | SIH26136 Prototype</title>
+  
+  <!-- Tailwind CSS & Font -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons & Three.js CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              950: '#030712',
+              900: '#070D1F',
+              800: '#0C1631',
+              700: '#14234B',
+            },
+            saffron: {
+              400: '#FBBF24',
+              500: '#F59E0B',
+              600: '#D97706',
+            },
+            govgreen: {
+              400: '#34D399',
+              500: '#10B981',
+              600: '#059669',
+            },
+            cyberblue: '#38BDF8',
+          },
+          animation: {
+            'spin-slow': 'spin 20s linear infinite',
+            'float': 'float 4s ease-in-out infinite',
+            'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.6', filter: 'drop-shadow(0 0 15px rgba(16, 185, 129, 0.4))' },
+              '50%': { opacity: '1', filter: 'drop-shadow(0 0 25px rgba(245, 158, 11, 0.8))' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 3D Glassmorphism & High-End Accents */
+    .glass-card {
+      background: rgba(12, 22, 49, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-6px) scale(1.01);
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 25px 60px rgba(7, 13, 31, 0.8), 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+    .glow-border {
+      position: relative;
+    }
+    .glow-border::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(90deg, #F59E0B, #10B981, #38BDF8);
+      border-radius: inherit;
+      z-index: -1;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+    .glow-border:hover::after {
+      opacity: 0.9;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070D1F; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10B981; }
+
+    /* Hide default radio buttons & inputs for custom pills */
+    .step-indicator.active {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-navy-950 text-slate-100 font-sans min-h-screen overflow-x-hidden selection:bg-govgreen-500 selection:text-white">
+
+  <!-- BACKGROUND 3D CANVAS -->
+  <div id="canvas-container" class="fixed inset-0 pointer-events-none z-0 opacity-40"></div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="sticky top-0 z-50 glass-card border-b border-slate-800/80 px-4 lg:px-8 py-3.5 transition-all">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('landing')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-saffron-500 via-govgreen-500 to-cyberblue p-0.5 shadow-lg shadow-emerald-950/40">
+          <div class="w-full h-full bg-navy-900 rounded-[10px] flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-5 h-5 text-govgreen-400"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <span class="font-display font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400">GovInnovate</span>
+            <span class="text-[10px] px-1.5 py-0.5 bg-saffron-500/20 text-saffron-400 font-mono font-bold rounded border border-saffron-500/30">MH</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium tracking-wide">Government of Maharashtra</p>
+        </div>
+      </div>
+
+      <!-- Desktop Nav Items -->
+      <nav class="hidden md:flex items-center space-x-1 bg-navy-900/60 p-1 rounded-xl border border-slate-800/60">
+        <button onclick="navigateTo('landing')" class="nav-link px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Home</button>
+        <button onclick="navigateTo('challenges')" class="nav-link px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Challenges</button>
+        <button onclick="navigateTo('startup')" class="nav-link px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Startup Desk</button>
+        <button onclick="navigateTo('command')" class="nav-link px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Command Center</button>
+        <button onclick="navigateTo('pilot')" class="nav-link px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Pilots</button>
+        <button onclick="navigateTo('passport')" class="nav-link px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition">Passport</button>
+      </nav>
+
+      <!-- Right Action CTAs -->
+      <div class="flex items-center space-x-3">
+        <!-- SIH DEMO MODE BUTTON -->
+        <button onclick="startSihDemoMode()" class="flex items-center space-x-2 bg-gradient-to-r from-saffron-500 to-amber-600 hover:from-saffron-400 hover:to-amber-500 text-navy-950 font-bold px-3.5 py-2 rounded-xl text-xs shadow-lg shadow-amber-950/40 transform hover:scale-105 transition-all">
+          <i data-lucide="play-circle" class="w-4 h-4 fill-navy-950"></i>
+          <span class="tracking-wider">SIH DEMO MODE</span>
+        </button>
+
+        <!-- Role Switcher Dropdown -->
+        <div class="relative group">
+          <button class="flex items-center space-x-2 glass-card px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 border border-slate-700/60 hover:border-govgreen-500 transition">
+            <span id="current-role-label" class="flex items-center space-x-1.5">
+              <span class="w-2 h-2 rounded-full bg-govgreen-400 animate-pulse"></span>
+              <span>Startup</span>
+            </span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+          </button>
+          <div class="absolute right-0 mt-2 w-48 glass-card rounded-xl p-1.5 border border-slate-700/80 shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
+            <div class="text-[10px] uppercase font-bold text-slate-400 px-2.5 py-1">Select Persona</div>
+            <button onclick="switchRole('startup')" class="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium hover:bg-slate-800/80 flex items-center justify-between">
+              <span>AgroVision (Startup)</span>
+              <i data-lucide="rocket" class="w-3.5 h-3.5 text-cyberblue"></i>
+            </button>
+            <button onclick="switchRole('government')" class="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium hover:bg-slate-800/80 flex items-center justify-between">
+              <span>Urban Dev (Officer)</span>
+              <i data-lucide="building-2" class="w-3.5 h-3.5 text-saffron-400"></i>
+            </button>
+            <button onclick="switchRole('admin')" class="w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium hover:bg-slate-800/80 flex items-center justify-between">
+              <span>Innovation Society (Admin)</span>
+              <i data-lucide="shield" class="w-3.5 h-3.5 text-govgreen-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Notification Bell -->
+        <button onclick="toggleNotifications()" class="relative p-2 rounded-xl glass-card border border-slate-700/60 hover:text-white transition">
+          <i data-lucide="bell" class="w-4 h-4 text-slate-300"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-saffron-500"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+  <!-- DEMO TOUR OVERLAY BAR -->
+  <div id="demo-tour-banner" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass-card px-6 py-3.5 rounded-2xl border border-saffron-500/60 shadow-2xl flex items-center space-x-6 backdrop-blur-2xl">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-saffron-500/20 text-saffron-400 flex items-center justify-center font-bold font-mono text-sm border border-saffron-500/30" id="tour-step-num">1/12</div>
+      <div>
+        <div class="text-xs font-bold text-white" id="tour-step-title">Government Creates Challenge</div>
+        <div class="text-[11px] text-slate-300" id="tour-step-desc">Identifying real-world public governance problems.</div>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="prevTourStep()" class="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-xs">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+      </button>
+      <button onclick="nextTourStep()" class="px-3.5 py-1.5 rounded-lg bg-saffron-500 text-navy-950 font-bold text-xs hover:bg-saffron-400 flex items-center space-x-1">
+        <span>Next</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      </button>
+      <button onclick="stopSihDemoMode()" class="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-rose-400 text-xs ml-2">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN ROUTED SCREENS CONTAINER -->
+  <!-- ========================================================================= -->
+  <main id="app-root" class="relative z-10 min-h-[calc(100vh-70px)]">
+
+    <!-- SCREEN 1: CINEMATIC 3D LANDING PAGE -->
+    <section id="screen-landing" class="screen-view">
+      
+      <!-- HERO -->
+      <div class="relative max-w-7xl mx-auto px-4 lg:px-8 pt-12 pb-20 lg:pt-16">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <div class="lg:col-span-7 space-y-6">
+            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>SIH26136 • Public Procurement Innovation Framework</span>
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold tracking-tight leading-[1.15]">
+              Transform Government Challenges into <span class="bg-clip-text text-transparent bg-gradient-to-r from-saffron-400 via-govgreen-400 to-cyberblue">Scalable Innovations</span>
+            </h1>
+
+            <p class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl font-light">
+              GovInnovate Maharashtra establishes an agile, transparent bridge connecting state departments with eligible tech startups—driving high-impact pilots to full-scale procurement.
+            </p>
+
+            <!-- Major CTA buttons -->
+            <div class="flex flex-wrap items-center gap-4 pt-2">
+              <button onclick="navigateTo('challenges')" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-govgreen-500 to-emerald-600 hover:from-govgreen-400 hover:to-emerald-500 text-white font-bold text-sm shadow-lg shadow-govgreen-950/50 flex items-center space-x-2 transform hover:-translate-y-0.5 transition-all">
+                <span>Explore Innovation Challenges</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+
+              <button onclick="startSihDemoMode()" class="px-6 py-3.5 rounded-xl glass-card border border-saffron-500/40 text-saffron-400 hover:text-white hover:bg-saffron-500/20 font-bold text-sm flex items-center space-x-2 transition-all">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span>Enter 2-Min Interactive Tour</span>
+              </button>
+            </div>
+
+            <!-- Trust Badge Row -->
+            <div class="pt-6 border-t border-slate-800/80 grid grid-cols-3 gap-4 text-slate-400 text-xs">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-govgreen-400"></i>
+                <span>Fast-track Pilot Sandbox</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-saffron-400"></i>
+                <span>Direct Escrow Milestone Pay</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-cyberblue"></i>
+                <span>Independent Validation Gate</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero 3D Ecosystem Visualization Node Graphic -->
+          <div class="lg:col-span-5 relative flex items-center justify-center">
+            <div class="relative w-80 h-80 sm:w-96 sm:h-96 flex items-center justify-center">
+              
+              <!-- Orbital Rings -->
+              <div class="absolute inset-0 rounded-full border border-dashed border-govgreen-500/20 animate-spin-slow"></div>
+              <div class="absolute inset-6 rounded-full border border-slate-700/40"></div>
+              <div class="absolute inset-16 rounded-full border border-dashed border-saffron-500/20 animate-spin-slow" style="animation-direction: reverse;"></div>
+
+              <!-- Center Hub -->
+              <div class="relative z-20 w-32 h-32 rounded-2xl glass-card border-2 border-emerald-500/50 shadow-2xl flex flex-col items-center justify-center text-center p-3 animate-float">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-govgreen-400 flex items-center justify-center mb-1">
+                  <i data-lucide="cpu" class="w-5 h-5"></i>
+                </div>
+                <span class="font-display font-bold text-xs text-white">GovInnovate</span>
+                <span class="text-[9px] text-emerald-400 font-mono">CORE HUB</span>
+              </div>
+
+              <!-- Surrounding Nodes -->
+              <div class="node-pill absolute -top-2 px-3 py-1.5 rounded-xl glass-card border border-cyberblue/40 text-[11px] font-semibold text-cyberblue flex items-center space-x-1.5 cursor-pointer shadow-lg hover:scale-110 transition" onclick="showNodeTooltip('Gov Needs: Automated challenges registered by verified departments.')">
+                <i data-lucide="building" class="w-3.5 h-3.5"></i>
+                <span>1. Problem</span>
+              </div>
+
+              <div class="node-pill absolute right-0 top-16 px-3 py-1.5 rounded-xl glass-card border border-saffron-500/40 text-[11px] font-semibold text-saffron-400 flex items-center space-x-1.5 cursor-pointer shadow-lg hover:scale-110 transition" onclick="showNodeTooltip('Startup Matches: Direct proposals with DPIIT auto-validation.')">
+                <i data-lucide="rocket" class="w-3.5 h-3.5"></i>
+                <span>2. Discovery</span>
+              </div>
+
+              <div class="node-pill absolute -right-2 bottom-20 px-3 py-1.5 rounded-xl glass-card border border-govgreen-500/40 text-[11px] font-semibold text-govgreen-400 flex items-center space-x-1.5 cursor-pointer shadow-lg hover:scale-110 transition" onclick="showNodeTooltip('90-Day Sandboxed Pilots: Fast-track testing with real field data.')">
+                <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>
+                <span>3. Live Pilot</span>
+              </div>
+
+              <div class="node-pill absolute bottom-0 left-12 px-3 py-1.5 rounded-xl glass-card border border-purple-500/40 text-[11px] font-semibold text-purple-400 flex items-center space-x-1.5 cursor-pointer shadow-lg hover:scale-110 transition" onclick="showNodeTooltip('Independent KPI Validation: Non-repudiable proof of success.')">
+                <i data-lucide="clipboard-check" class="w-3.5 h-3.5"></i>
+                <span>4. Evidence</span>
+              </div>
+
+              <div class="node-pill absolute -left-4 top-24 px-3 py-1.5 rounded-xl glass-card border border-amber-500/40 text-[11px] font-semibold text-amber-300 flex items-center space-x-1.5 cursor-pointer shadow-lg hover:scale-110 transition" onclick="showNodeTooltip('GeM State Scaling: Preferential scaling without repeating tenders.')">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                <span>5. Scale-Up</span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LIVE INNOVATION ECOSYSTEM COUNTERS -->
+      <div class="border-y border-slate-800/80 bg-navy-900/40 py-10 relative">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8">
+          <div class="text-center mb-8">
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-emerald-400">Maharashtra Innovation Impact Telemetry</span>
+            <h2 class="text-2xl font-display font-bold text-white mt-1">Real-Time Procurement Transition Metrics</h2>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
+            <div class="glass-card p-4 rounded-2xl border border-slate-800">
+              <div class="text-3xl font-display font-extrabold text-saffron-400 counter" data-target="127">0</div>
+              <div class="text-xs text-slate-400 mt-1 font-medium">Active Challenges</div>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800">
+              <div class="text-3xl font-display font-extrabold text-cyberblue counter" data-target="486">0</div>
+              <div class="text-xs text-slate-400 mt-1 font-medium">Eligible Startups</div>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800">
+              <div class="text-3xl font-display font-extrabold text-govgreen-400 counter" data-target="74">0</div>
+              <div class="text-xs text-slate-400 mt-1 font-medium">Sanctioned Pilots</div>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800">
+              <div class="text-3xl font-display font-extrabold text-purple-400 counter" data-target="31">0</div>
+              <div class="text-xs text-slate-400 mt-1 font-medium">Validated Solutions</div>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800">
+              <div class="text-3xl font-display font-extrabold text-emerald-400 counter" data-target="18">0</div>
+              <div class="text-xs text-slate-400 mt-1 font-medium">State Scale Orders</div>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800">
+              <div class="text-3xl font-display font-extrabold text-saffron-400">₹24.6 Cr</div>
+              <div class="text-xs text-slate-400 mt-1 font-medium">Pilot / Escrow Pool</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE MAHARASHTRA DISTRICT INNOVATION MAP & HEATMAP -->
+      <div class="max-w-7xl mx-auto px-4 lg:px-8 py-16">
+        <div class="glass-card rounded-3xl p-6 lg:p-8 border border-slate-800 relative overflow-hidden">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+              <div class="inline-flex items-center space-x-1.5 text-xs font-mono text-saffron-400 mb-1">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                <span>DISTRICT PILOT TELEMETRY</span>
+              </div>
+              <h3 class="text-2xl font-display font-bold text-white">Statewide Innovation Distribution</h3>
+              <p class="text-xs text-slate-400">Hover or click on key clusters to view municipal testbeds and active procurement pilots.</p>
+            </div>
+
+            <!-- District Pill Toggles -->
+            <div class="flex flex-wrap gap-2" id="district-quick-tabs">
+              <button onclick="selectDistrict('Pune')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-govgreen-500/20 text-govgreen-400 border border-govgreen-500/40">Pune</button>
+              <button onclick="selectDistrict('Mumbai')" class="px-3 py-1.5 rounded-lg text-xs font-bold glass-card text-slate-300 hover:text-white">Mumbai</button>
+              <button onclick="selectDistrict('Nagpur')" class="px-3 py-1.5 rounded-lg text-xs font-bold glass-card text-slate-300 hover:text-white">Nagpur</button>
+              <button onclick="selectDistrict('Nashik')" class="px-3 py-1.5 rounded-lg text-xs font-bold glass-card text-slate-300 hover:text-white">Nashik</button>
+              <button onclick="selectDistrict('Chhatrapati Sambhajinagar')" class="px-3 py-1.5 rounded-lg text-xs font-bold glass-card text-slate-300 hover:text-white">Sambhajinagar</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <!-- Stylized SVG / 3D Coordinate Canvas Map -->
+            <div class="lg:col-span-8 bg-navy-950/60 rounded-2xl p-4 border border-slate-800/80 relative min-h-[340px] flex items-center justify-center">
+              <svg viewBox="0 0 650 450" class="w-full h-auto max-h-[380px] drop-shadow-[0_0_25px_rgba(16,185,129,0.15)]">
+                <!-- Abstract stylized geometry of Maharashtra borders -->
+                <path d="M 120,90 L 260,70 L 410,50 L 580,120 L 590,200 L 510,260 L 430,360 L 290,390 L 190,370 L 120,300 L 90,220 Z" fill="#070D1F" stroke="#1E293B" stroke-width="2" stroke-dasharray="4 2" />
+                <path d="M 140,110 L 250,95 L 390,75 L 540,135 L 550,195 L 480,245 L 400,335 L 280,360 L 180,340 L 120,270 L 100,200 Z" fill="rgba(16, 185, 129, 0.04)" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1.5" />
+                
+                <!-- Districts Interactive Nodes -->
+                <!-- Pune -->
+                <g class="cursor-pointer group" onclick="selectDistrict('Pune')">
+                  <circle cx="230" cy="250" r="18" fill="rgba(16, 185, 129, 0.2)" class="animate-ping" />
+                  <circle cx="230" cy="250" r="8" fill="#10B981" />
+                  <text x="245" y="254" fill="#34D399" font-size="12" font-family="'Plus Jakarta Sans'" font-weight="700">Pune (Hub)</text>
+                </g>
+
+                <!-- Mumbai MMR -->
+                <g class="cursor-pointer group" onclick="selectDistrict('Mumbai')">
+                  <circle cx="130" cy="220" r="22" fill="rgba(245, 158, 11, 0.2)" class="animate-ping" style="animation-duration: 3s;" />
+                  <circle cx="130" cy="220" r="9" fill="#F59E0B" />
+                  <text x="70" y="214" fill="#FBBF24" font-size="12" font-family="'Plus Jakarta Sans'" font-weight="700">Mumbai MMR</text>
+                </g>
+
+                <!-- Nagpur -->
+                <g class="cursor-pointer group" onclick="selectDistrict('Nagpur')">
+                  <circle cx="510" cy="140" r="14" fill="rgba(56, 189, 248, 0.2)" class="animate-ping" style="animation-duration: 2.5s;" />
+                  <circle cx="510" cy="140" r="7" fill="#38BDF8" />
+                  <text x="525" y="144" fill="#38BDF8" font-size="12" font-family="'Plus Jakarta Sans'" font-weight="700">Nagpur</text>
+                </g>
+
+                <!-- Nashik -->
+                <g class="cursor-pointer group" onclick="selectDistrict('Nashik')">
+                  <circle cx="210" cy="170" r="6" fill="#A855F7" />
+                  <text x="222" y="174" fill="#C084FC" font-size="11" font-family="'Plus Jakarta Sans'" font-weight="600">Nashik</text>
+                </g>
+
+                <!-- Sambhajinagar (Aurangabad) -->
+                <g class="cursor-pointer group" onclick="selectDistrict('Chhatrapati Sambhajinagar')">
+                  <circle cx="300" cy="190" r="6" fill="#34D399" />
+                  <text x="312" y="194" fill="#6EE7B7" font-size="11" font-family="'Plus Jakarta Sans'" font-weight="600">Chh. Sambhajinagar</text>
+                </g>
+
+                <!-- Kolhapur -->
+                <g class="cursor-pointer group" onclick="selectDistrict('Kolhapur')">
+                  <circle cx="210" cy="340" r="5" fill="#F59E0B" />
+                  <text x="222" y="344" fill="#FCD34D" font-size="11" font-family="'Plus Jakarta Sans'" font-weight="600">Kolhapur</text>
+                </g>
+
+                <!-- Connections -->
+                <line x1="130" y1="220" x2="230" y2="250" stroke="#10B981" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+                <line x1="230" y1="250" x2="300" y2="190" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+                <line x1="300" y1="190" x2="510" y2="140" stroke="#38BDF8" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+              </svg>
+
+              <div class="absolute bottom-3 left-3 text-[10px] text-slate-500 font-mono">
+                Click district nodes for live sandbox statistics.
+              </div>
+            </div>
+
+            <!-- District Detail Panel -->
+            <div class="lg:col-span-4 glass-card p-5 rounded-2xl border border-slate-800 space-y-4" id="district-info-card">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <span class="text-[10px] font-mono uppercase text-govgreen-400 font-bold">Selected Innovation Cluster</span>
+                  <h4 class="text-xl font-display font-bold text-white" id="dist-name">Pune Smart Sandbox</h4>
+                </div>
+                <span class="px-2.5 py-1 rounded bg-govgreen-500/10 text-govgreen-400 border border-govgreen-500/20 text-xs font-bold">Zone 1</span>
+              </div>
+
+              <div class="space-y-3 text-xs">
+                <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                  <span class="text-slate-400">Host Municipal Corporation:</span>
+                  <span class="font-bold text-white" id="dist-corp">PMC & PCMC</span>
+                </div>
+                <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                  <span class="text-slate-400">Live Active Challenges:</span>
+                  <span class="font-bold text-saffron-400" id="dist-challenges">28 Open</span>
+                </div>
+                <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                  <span class="text-slate-400">Startups Deployed:</span>
+                  <span class="font-bold text-cyberblue" id="dist-startups">94 Startups</span>
+                </div>
+                <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                  <span class="text-slate-400">Active Testbed Pilots:</span>
+                  <span class="font-bold text-govgreen-400" id="dist-pilots">16 Active</span>
+                </div>
+                <div class="flex justify-between items-center py-1.5">
+                  <span class="text-slate-400">Validated Scale Transitions:</span>
+                  <span class="font-bold text-purple-400" id="dist-validated">7 Ready for GeM</span>
+                </div>
+              </div>
+
+              <button onclick="navigateTo('challenges')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center justify-center space-x-1.5">
+                <span>View Pune Region Challenges</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D ROLE CARDS ("Choose Your Journey") -->
+      <div class="max-w-7xl mx-auto px-4 lg:px-8 py-16 border-t border-slate-800/80">
+        <div class="text-center max-w-xl mx-auto mb-12">
+          <span class="text-xs font-mono font-bold uppercase tracking-widest text-saffron-400">Streamlined Workflows</span>
+          <h2 class="text-3xl font-display font-bold text-white mt-1">Choose Your Innovation Journey</h2>
+          <p class="text-xs text-slate-400 mt-2">Tailored portals designed for startups, departments, and government monitoring authorities.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          <!-- Startup Card -->
+          <div class="glass-card glass-card-hover p-8 rounded-3xl border border-slate-800 relative flex flex-col justify-between group">
+            <div class="space-y-4">
+              <div class="w-14 h-14 rounded-2xl bg-cyberblue/10 border border-cyberblue/30 text-cyberblue flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                <i data-lucide="rocket" class="w-7 h-7"></i>
+              </div>
+              <h3 class="text-xl font-display font-bold text-white">Eligible Startups</h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Discover curated government problems, verify eligibility with DPIIT auto-checks, pilot innovative technologies, and receive milestone payments.
+              </p>
+              <ul class="text-xs text-slate-400 space-y-2 pt-2">
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-govgreen-400"></i><span>Zero-fee pilot application</span></li>
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-govgreen-400"></i><span>Direct milestone escrow release</span></li>
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-govgreen-400"></i><span>Digital Innovation Passport</span></li>
+              </ul>
+            </div>
+            <button onclick="switchRole('startup')" class="mt-8 w-full py-3 rounded-xl bg-cyberblue/20 hover:bg-cyberblue text-cyberblue hover:text-navy-950 border border-cyberblue/40 font-bold text-xs transition flex items-center justify-center space-x-2">
+              <span>Enter Startup Workspace</span>
+              <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Government Officer Card -->
+          <div class="glass-card glass-card-hover p-8 rounded-3xl border border-saffron-500/30 relative flex flex-col justify-between group shadow-lg shadow-saffron-950/20">
+            <div class="absolute -top-3 right-6 px-3 py-1 rounded-full bg-saffron-500 text-navy-950 text-[10px] font-extrabold uppercase">Department Portal</div>
+            <div class="space-y-4">
+              <div class="w-14 h-14 rounded-2xl bg-saffron-500/10 border border-saffron-500/30 text-saffron-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                <i data-lucide="building-2" class="w-7 h-7"></i>
+              </div>
+              <h3 class="text-xl font-display font-bold text-white">Government Officers</h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Define operational municipal & state pain points, run rapid 90-day pilots, monitor KPI telemetry, and access evidence-backed procurement pathways.
+              </p>
+              <ul class="text-xs text-slate-400 space-y-2 pt-2">
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-saffron-400"></i><span>1-Click Challenge Publishing</span></li>
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-saffron-400"></i><span>Multi-expert evaluation grid</span></li>
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-saffron-400"></i><span>Legal compliance & sandbox rules</span></li>
+              </ul>
+            </div>
+            <button onclick="switchRole('government')" class="mt-8 w-full py-3 rounded-xl bg-saffron-500 hover:bg-saffron-400 text-navy-950 font-bold text-xs shadow-lg transition flex items-center justify-center space-x-2">
+              <span>Open Command Center</span>
+              <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Admin / Innovation Society Card -->
+          <div class="glass-card glass-card-hover p-8 rounded-3xl border border-slate-800 relative flex flex-col justify-between group">
+            <div class="space-y-4">
+              <div class="w-14 h-14 rounded-2xl bg-govgreen-500/10 border border-govgreen-500/30 text-govgreen-400 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                <i data-lucide="shield-check" class="w-7 h-7"></i>
+              </div>
+              <h3 class="text-xl font-display font-bold text-white">Innovation Society (MSInS)</h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Monitor state-wide innovation density, track escrow disbursements, manage independent validation agencies, and scale winners statewide.
+              </p>
+              <ul class="text-xs text-slate-400 space-y-2 pt-2">
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-govgreen-400"></i><span>Cross-department analytics</span></li>
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-govgreen-400"></i><span>Independent validation sign-off</span></li>
+                <li class="flex items-center space-x-2"><i data-lucide="check" class="w-3.5 h-3.5 text-govgreen-400"></i><span>GeM & Rule 149 alignment</span></li>
+              </ul>
+            </div>
+            <button onclick="switchRole('admin')" class="mt-8 w-full py-3 rounded-xl bg-govgreen-500/20 hover:bg-govgreen-500 text-govgreen-400 hover:text-navy-950 border border-govgreen-500/40 font-bold text-xs transition flex items-center justify-center space-x-2">
+              <span>Enter State Overview</span>
+              <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: STARTUP DASHBOARD -->
+    <section id="screen-startup" class="screen-view hidden max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      
+      <!-- Greeting Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 rounded-3xl border border-slate-800">
+        <div class="flex items-center space-x-4">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyberblue to-govgreen-500 p-0.5 shadow-lg">
+            <div class="w-full h-full bg-navy-950 rounded-[14px] flex items-center justify-center text-xl font-bold font-display text-white">
+              AV
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-xl font-display font-bold text-white">AgroVision Technologies</h2>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono">DPIIT: DIPP98231</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Good morning, Innovator 👋 You have <strong class="text-saffron-400">1 urgent milestone sign-off</strong> pending.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('passport')" class="px-4 py-2 rounded-xl glass-card border border-cyberblue/40 text-cyberblue hover:bg-cyberblue/10 text-xs font-bold transition flex items-center space-x-1.5">
+            <i data-lucide="award" class="w-4 h-4"></i>
+            <span>View Innovation Passport</span>
+          </button>
+          <button onclick="navigateTo('challenges')" class="px-4 py-2 rounded-xl bg-govgreen-500 hover:bg-govgreen-400 text-navy-950 text-xs font-bold transition flex items-center space-x-1.5 shadow-lg">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span>Browse Challenges</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Startup Metric Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Eligible Challenges</span>
+          <div class="text-2xl font-display font-bold text-saffron-400 mt-1">12</div>
+          <span class="text-[10px] text-govgreen-400 font-medium">3 matched by AI</span>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Proposals Filed</span>
+          <div class="text-2xl font-display font-bold text-cyberblue mt-1">5</div>
+          <span class="text-[10px] text-slate-400">2 under evaluation</span>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Active Live Pilots</span>
+          <div class="text-2xl font-display font-bold text-govgreen-400 mt-1">2</div>
+          <span class="text-[10px] text-emerald-400">Pune & Nashik</span>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Milestones Done</span>
+          <div class="text-2xl font-display font-bold text-purple-400 mt-1">7 / 9</div>
+          <span class="text-[10px] text-purple-300">Next due in 6 days</span>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800 col-span-2 lg:col-span-1">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Disbursed Funds</span>
+          <div class="text-2xl font-display font-bold text-white mt-1">₹8.4 Lakhs</div>
+          <span class="text-[10px] text-saffron-400">₹4.0L Escrow Locked</span>
+        </div>
+      </div>
+
+      <!-- 3D PROGRESS VISUALIZATION: INNOVATION JOURNEY TRACKER -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-mono uppercase text-cyberblue font-bold">Active Track: Pune Waste Route AI Pilot</span>
+            <h3 class="text-lg font-display font-bold text-white">Innovation Procurement Pipeline Progression</h3>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-govgreen-500/20 text-govgreen-400 border border-govgreen-500/40 text-xs font-bold">Stage 4: Active 90-Day Pilot</span>
+        </div>
+
+        <!-- Linear Progress Stepper -->
+        <div class="relative py-4">
+          <div class="absolute top-1/2 left-0 right-0 h-1 bg-slate-800 -translate-y-1/2 z-0"></div>
+          <div class="absolute top-1/2 left-0 w-3/5 h-1 bg-gradient-to-r from-govgreen-500 to-cyberblue -translate-y-1/2 z-0"></div>
+
+          <div class="relative z-10 grid grid-cols-6 gap-2 text-center text-xs">
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center">
+              <div class="w-8 h-8 rounded-full bg-govgreen-500 text-navy-950 font-bold flex items-center justify-center mb-1 text-xs">✓</div>
+              <span class="font-bold text-white">Application</span>
+              <span class="text-[9px] text-slate-400">Approved</span>
+            </div>
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center">
+              <div class="w-8 h-8 rounded-full bg-govgreen-500 text-navy-950 font-bold flex items-center justify-center mb-1 text-xs">✓</div>
+              <span class="font-bold text-white">Evaluation</span>
+              <span class="text-[9px] text-slate-400">Score 88/100</span>
+            </div>
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center">
+              <div class="w-8 h-8 rounded-full bg-govgreen-500 text-navy-950 font-bold flex items-center justify-center mb-1 text-xs">✓</div>
+              <span class="font-bold text-white">Shortlisted</span>
+              <span class="text-[9px] text-slate-400">MOU Executed</span>
+            </div>
+            <!-- Step 4 (Current) -->
+            <div class="flex flex-col items-center">
+              <div class="w-10 h-10 -mt-1 rounded-full bg-cyberblue text-navy-950 font-extrabold flex items-center justify-center mb-1 text-xs ring-4 ring-cyberblue/30 animate-pulse">4</div>
+              <span class="font-bold text-cyberblue">Pilot In-Vivo</span>
+              <span class="text-[9px] text-cyberblue font-semibold">68% Done</span>
+            </div>
+            <!-- Step 5 -->
+            <div class="flex flex-col items-center opacity-50">
+              <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-slate-400 font-bold flex items-center justify-center mb-1 text-xs">5</div>
+              <span class="font-bold text-slate-300">Validation</span>
+              <span class="text-[9px] text-slate-500">Scheduled</span>
+            </div>
+            <!-- Step 6 -->
+            <div class="flex flex-col items-center opacity-40">
+              <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-slate-400 font-bold flex items-center justify-center mb-1 text-xs">6</div>
+              <span class="font-bold text-slate-300">Scale GeM</span>
+              <span class="text-[9px] text-slate-500">Order Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
+          <div class="text-slate-400">Current Milestone: <strong class="text-white">Milestone 3 (Sensor Telemetry Integration & Route Heatmap)</strong></div>
+          <button onclick="navigateTo('pilot')" class="text-govgreen-400 hover:text-white font-bold flex items-center space-x-1">
+            <span>Manage Telemetry & Pilot Workdesk</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Grid: Active Pilots & Milestone Escrow -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Active Pilots Quick Access -->
+        <div class="lg:col-span-7 glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-bold text-base text-white">Contracted Public Pilots</h3>
+            <span class="text-xs text-slate-400">2 Contracts Active</span>
+          </div>
+
+          <!-- Pilot Card 1 -->
+          <div class="p-4 rounded-2xl bg-navy-900/60 border border-slate-800 hover:border-slate-700 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-sm text-white">Smart Waste Route Optimization</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Pune (PMC)</span>
+              </div>
+              <p class="text-xs text-slate-400">Urban Development • 90-Day Sandboxed Test</p>
+              <div class="flex items-center space-x-3 text-[11px] text-slate-300 pt-1">
+                <span>KPI: <strong class="text-govgreen-400">+32% Route Efficiency</strong></span>
+                <span>•</span>
+                <span>Budget: <strong>₹25 Lakhs</strong></span>
+              </div>
+            </div>
+            <button onclick="navigateTo('pilot')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shrink-0">Open Pilot View</button>
+          </div>
+
+          <!-- Pilot Card 2 -->
+          <div class="p-4 rounded-2xl bg-navy-900/60 border border-slate-800 hover:border-slate-700 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-sm text-white">AI Crop Disease Satellite Sentinel</span>
+                <span class="px-2 py-0.5 rounded bg-saffron-500/20 text-saffron-400 text-[10px] font-bold">Nashik District</span>
+              </div>
+              <p class="text-xs text-slate-400">Agriculture Dept • Milestone 1 Initialization</p>
+              <div class="flex items-center space-x-3 text-[11px] text-slate-300 pt-1">
+                <span>KPI: <strong class="text-saffron-400">92% Early Detection</strong></span>
+                <span>•</span>
+                <span>Budget: <strong>₹18 Lakhs</strong></span>
+              </div>
+            </div>
+            <button onclick="showToast('Nashik Sentinel Pilot initialized successfully.', 'info')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shrink-0">Details</button>
+          </div>
+        </div>
+
+        <!-- Milestone & Payment Escrow Overview -->
+        <div class="lg:col-span-5 glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-bold text-base text-white">Direct Escrow Tracker</h3>
+            <span class="text-xs font-mono text-saffron-400 font-bold">Auto-Release Enabled</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-navy-950/60 border border-slate-800/80 text-xs">
+              <div class="flex items-center space-x-3">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-govgreen-400"></i>
+                <div>
+                  <div class="font-bold text-white">Milestone 1: Baseline Architecture</div>
+                  <div class="text-[10px] text-slate-400">Released on: 12 Aug 2026</div>
+                </div>
+              </div>
+              <span class="font-bold text-govgreen-400">₹2,00,000</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-navy-950/60 border border-slate-800/80 text-xs">
+              <div class="flex items-center space-x-3">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-govgreen-400"></i>
+                <div>
+                  <div class="font-bold text-white">Milestone 2: Vehicle IoT Gateway</div>
+                  <div class="text-[10px] text-slate-400">Released on: 04 Sep 2026</div>
+                </div>
+              </div>
+              <span class="font-bold text-govgreen-400">₹3,50,000</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-saffron-500/10 border border-saffron-500/30 text-xs">
+              <div class="flex items-center space-x-3">
+                <i data-lucide="clock" class="w-4 h-4 text-saffron-400 animate-spin-slow"></i>
+                <div>
+                  <div class="font-bold text-white">Milestone 3: AI Route Inference</div>
+                  <div class="text-[10px] text-saffron-400">Under municipal verification</div>
+                </div>
+              </div>
+              <span class="font-bold text-saffron-400">₹4,00,000</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-navy-950/40 border border-slate-800/40 text-xs opacity-60">
+              <div class="flex items-center space-x-3">
+                <i data-lucide="circle" class="w-4 h-4 text-slate-500"></i>
+                <div>
+                  <div class="font-bold text-slate-300">Milestone 4: Final Validation</div>
+                  <div class="text-[10px] text-slate-500">Requires third-party audit</div>
+                </div>
+              </div>
+              <span class="font-bold text-slate-400">₹5,00,000</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 3: CHALLENGE MARKETPLACE -->
+    <section id="screen-challenges" class="screen-view hidden max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-6">
+      
+      <!-- Marketplace Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-govgreen-400">State Innovation Marketplace</span>
+          <h2 class="text-3xl font-display font-bold text-white mt-1">Discover Government Challenges</h2>
+          <p class="text-xs text-slate-400 mt-1">Verified problem statements uploaded directly by Maharashtra state departments seeking agile solutions.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- Search input -->
+          <div class="relative w-full md:w-64">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="challenge-search" oninput="filterChallenges()" placeholder="Search AI, Waste, Health..." class="w-full bg-navy-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-govgreen-500 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="glass-card p-3 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex flex-wrap items-center gap-2" id="sector-filter-buttons">
+          <button onclick="setSectorFilter('All')" class="filter-pill active px-3 py-1.5 rounded-lg font-bold bg-govgreen-500 text-navy-950 transition">All Sectors</button>
+          <button onclick="setSectorFilter('Urban Development')" class="filter-pill px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:bg-slate-800 transition">Urban Development</button>
+          <button onclick="setSectorFilter('Agriculture')" class="filter-pill px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:bg-slate-800 transition">Agriculture</button>
+          <button onclick="setSectorFilter('Public Health')" class="filter-pill px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:bg-slate-800 transition">Public Health</button>
+          <button onclick="setSectorFilter('Water Resources')" class="filter-pill px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:bg-slate-800 transition">Water Resources</button>
+        </div>
+
+        <div class="flex items-center space-x-2 text-slate-400">
+          <span>Sort by:</span>
+          <select class="bg-navy-900 text-white rounded-lg px-2.5 py-1 border border-slate-700 text-xs">
+            <option>Latest Published</option>
+            <option>Highest Pilot Budget</option>
+            <option>Shortest Pilot Duration</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Challenge Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="challenges-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- SCREEN 4: CHALLENGE DETAILS & SUCCESS JOURNEY -->
+    <section id="screen-challenge-detail" class="screen-view hidden max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      
+      <!-- Back Button -->
+      <button onclick="navigateTo('challenges')" class="inline-flex items-center space-x-2 text-xs font-bold text-slate-400 hover:text-white transition">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <span>Back to All Challenges</span>
+      </button>
+
+      <!-- Details Header Banner -->
+      <div class="glass-card p-6 lg:p-8 rounded-3xl border border-slate-800 relative space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="px-2.5 py-1 rounded bg-cyberblue/20 text-cyberblue border border-cyberblue/40 text-xs font-bold">Urban Development</span>
+          <span class="px-2.5 py-1 rounded bg-govgreen-500/20 text-govgreen-400 border border-govgreen-500/40 text-xs font-bold">Pune Municipal Corp</span>
+          <span class="px-2.5 py-1 rounded bg-saffron-500/20 text-saffron-400 border border-saffron-500/40 text-xs font-bold font-mono">ID: CH-MH-2026-081</span>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-display font-extrabold text-white">
+          Smart Waste Collection Route Optimization Using AI & IoT
+        </h1>
+
+        <p class="text-sm text-slate-300 leading-relaxed max-w-3xl font-light">
+          Municipal waste collection vehicles in Pune face unpredictable traffic congestion and dynamic waste bin fill rates, leading to excessive fuel consumption, missed pickups, and high carbon emissions.
+        </p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-800 text-xs">
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">Pilot Grant Budget</span>
+            <span class="text-lg font-bold text-white">₹25,00,000</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">Pilot Duration</span>
+            <span class="text-lg font-bold text-white">90 Days</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">Target Efficiency KPI</span>
+            <span class="text-lg font-bold text-govgreen-400">&gt; 25% Reduction</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">Procurement Pathway</span>
+            <span class="text-lg font-bold text-saffron-400">Rule 149 / GeM Scale</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Journey Map -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+        <h3 class="font-display font-bold text-base text-white">Public Procurement Pathway for this Challenge</h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center text-xs">
+          <div class="p-3 rounded-xl bg-navy-900/80 border border-slate-800">
+            <span class="text-govgreen-400 font-bold block mb-1">1. Post Problem</span>
+            <span class="text-[10px] text-slate-400">Published by PMC</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/80 border border-slate-800">
+            <span class="text-cyberblue font-bold block mb-1">2. Startup Apply</span>
+            <span class="text-[10px] text-slate-400">Zero tender fees</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/80 border border-slate-800">
+            <span class="text-saffron-400 font-bold block mb-1">3. 90-Day Pilot</span>
+            <span class="text-[10px] text-slate-400">50 Ward testbed</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/80 border border-slate-800">
+            <span class="text-purple-400 font-bold block mb-1">4. Milestone Pay</span>
+            <span class="text-[10px] text-slate-400">Direct Escrow</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/80 border border-slate-800">
+            <span class="text-emerald-400 font-bold block mb-1">5. Validation</span>
+            <span class="text-[10px] text-slate-400">IIT Bombay / CoEP</span>
+          </div>
+          <div class="p-3 rounded-xl bg-saffron-500/20 border border-saffron-500/40">
+            <span class="text-saffron-400 font-bold block mb-1">6. State Scaling</span>
+            <span class="text-[10px] text-white font-semibold">27 Municipal Corps</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Requirements & Eligibility Specs -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-8 space-y-6">
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+            <h3 class="font-display font-bold text-base text-white">Expected Outcomes & Technical Scope</h3>
+            <ul class="space-y-3 text-xs text-slate-300 leading-relaxed">
+              <li class="flex items-start space-x-2.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-govgreen-400 shrink-0 mt-0.5"></i>
+                <span><strong>Dynamic Rerouting Engine:</strong> Integration of GPS telemetry from 140 municipal tippers with live Google Maps/OpenStreetMap congestion data.</span>
+              </li>
+              <li class="flex items-start space-x-2.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-govgreen-400 shrink-0 mt-0.5"></i>
+                <span><strong>Bin Fill Ultrasonic Telemetry:</strong> Ingestion of volume signals from 300 commercial dumper bins across Zone 3 (Kothrud/Aundh).</span>
+              </li>
+              <li class="flex items-start space-x-2.5">
+                <i data-lucide="check-circle-2" class="w-4 h-4 text-govgreen-400 shrink-0 mt-0.5"></i>
+                <span><strong>Driver Navigation Mobile Client:</strong> Vernacular turn-by-turn Marathi/English voice guidance for municipal sanitation operators.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+            <h3 class="font-display font-bold text-base text-white">Startup Eligibility & Sandbox Exemption Criteria</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+                <div class="font-bold text-white mb-1">Turnover Criteria</div>
+                <div class="text-slate-400">Waived as per Maharashtra State Innovative Startup Policy 2026. Zero past revenue barrier.</div>
+              </div>
+              <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+                <div class="font-bold text-white mb-1">EMD / Tender Fee Exemption</div>
+                <div class="text-slate-400">100% Exemption from Earnest Money Deposit for DPIIT-recognized entities.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Action Sidebar -->
+        <div class="lg:col-span-4 space-y-6">
+          <div class="glass-card p-6 rounded-3xl border border-govgreen-500/40 space-y-4 shadow-xl">
+            <h4 class="font-display font-bold text-base text-white">Apply for Sandbox Pilot</h4>
+            <p class="text-xs text-slate-300">
+              Complete the fast-track 7-step wizard. Your DPIIT credentials and IP protections will be automatically verified.
+            </p>
+
+            <div class="space-y-2 text-xs text-slate-400 pt-2 border-t border-slate-800">
+              <div class="flex justify-between"><span>Applications Close:</span><span class="text-saffron-400 font-bold">14 Days Left</span></div>
+              <div class="flex justify-between"><span>Shortlist Announced:</span><span class="text-white">Within 7 days of close</span></div>
+              <div class="flex justify-between"><span>Evaluation Mode:</span><span class="text-white">Double-blind Technical Grid</span></div>
+            </div>
+
+            <button onclick="startApplicationWizard()" class="w-full py-3.5 rounded-xl bg-govgreen-500 hover:bg-govgreen-400 text-navy-950 font-bold text-xs shadow-lg transition flex items-center justify-center space-x-2">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>Launch Application Wizard</span>
+            </button>
+
+            <button onclick="askCopilotAboutChallenge()" class="w-full py-2.5 rounded-xl glass-card border border-cyberblue/40 text-cyberblue hover:bg-cyberblue/10 text-xs font-bold transition flex items-center justify-center space-x-2">
+              <i data-lucide="bot" class="w-4 h-4"></i>
+              <span>Ask AI Copilot for Proposal Tips</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 5: STARTUP APPLICATION WIZARD (7-STEP INTERACTIVE) -->
+    <section id="screen-wizard" class="screen-view hidden max-w-4xl mx-auto px-4 py-8 space-y-8">
+      
+      <!-- Wizard Progress Header -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-mono uppercase text-govgreen-400 font-bold">Proposal Submission Sandbox</span>
+            <h2 class="text-xl font-display font-bold text-white">Smart Waste Collection Application</h2>
+          </div>
+          <span class="text-xs font-mono font-bold text-saffron-400" id="step-counter-text">Step 1 of 7</span>
+        </div>
+
+        <!-- 7-Step Horizontal Pills -->
+        <div class="grid grid-cols-7 gap-1.5 pt-2">
+          <div class="step-pill h-1.5 rounded-full bg-govgreen-500 transition-all" id="pill-1"></div>
+          <div class="step-pill h-1.5 rounded-full bg-slate-800 transition-all" id="pill-2"></div>
+          <div class="step-pill h-1.5 rounded-full bg-slate-800 transition-all" id="pill-3"></div>
+          <div class="step-pill h-1.5 rounded-full bg-slate-800 transition-all" id="pill-4"></div>
+          <div class="step-pill h-1.5 rounded-full bg-slate-800 transition-all" id="pill-5"></div>
+          <div class="step-pill h-1.5 rounded-full bg-slate-800 transition-all" id="pill-6"></div>
+          <div class="step-pill h-1.5 rounded-full bg-slate-800 transition-all" id="pill-7"></div>
+        </div>
+      </div>
+
+      <!-- Dynamic Wizard Form Body -->
+      <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-800" id="wizard-form-container">
+        
+        <!-- Step 1: Startup Profile -->
+        <div class="wizard-step" id="wizard-step-1">
+          <h3 class="text-lg font-display font-bold text-white mb-2">Step 1: Entity & Startup Profile</h3>
+          <p class="text-xs text-slate-400 mb-6">Confirm your DPIIT recognition and registered Maharashtra operational address.</p>
+
+          <div class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Entity Registered Name</label>
+                <input type="text" value="AgroVision Technologies Pvt Ltd" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white" readonly>
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">DPIIT Certificate Number</label>
+                <input type="text" value="DIPP98231 / MH2024" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-govgreen-400 font-mono" readonly>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Founding Year</label>
+                <input type="text" value="2023" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white">
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Primary Innovation Tech Stack</label>
+                <input type="text" value="Computer Vision, IoT Sensor Telemetry, Edge AI" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Eligibility Check -->
+        <div class="wizard-step hidden" id="wizard-step-2">
+          <h3 class="text-lg font-display font-bold text-white mb-2">Step 2: Automated Eligibility Attestation</h3>
+          <p class="text-xs text-slate-400 mb-6">Zero-paper automated compliance cross-referenced with Maharashtra state registries.</p>
+
+          <div class="space-y-3 text-xs">
+            <label class="flex items-center space-x-3 p-3.5 rounded-xl bg-navy-900/60 border border-slate-800 cursor-pointer hover:border-govgreen-500 transition">
+              <input type="checkbox" checked class="w-4 h-4 text-govgreen-500 rounded bg-navy-950 border-slate-700">
+              <span class="text-slate-300">Entity is recognized by DPIIT as a certified Innovative Startup.</span>
+            </label>
+            <label class="flex items-center space-x-3 p-3.5 rounded-xl bg-navy-900/60 border border-slate-800 cursor-pointer hover:border-govgreen-500 transition">
+              <input type="checkbox" checked class="w-4 h-4 text-govgreen-500 rounded bg-navy-950 border-slate-700">
+              <span class="text-slate-300">Entity is not blacklisted by any Central/State Government PSU or Municipal Body.</span>
+            </label>
+            <label class="flex items-center space-x-3 p-3.5 rounded-xl bg-navy-900/60 border border-slate-800 cursor-pointer hover:border-govgreen-500 transition">
+              <input type="checkbox" checked class="w-4 h-4 text-govgreen-500 rounded bg-navy-950 border-slate-700">
+              <span class="text-slate-300">Entity possesses full intellectual ownership of core routing algorithms.</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 3: Solution Architecture -->
+        <div class="wizard-step hidden" id="wizard-step-3">
+          <h3 class="text-lg font-display font-bold text-white mb-2">Step 3: Solution Abstract & Value Proposition</h3>
+          <p class="text-xs text-slate-400 mb-6">Briefly detail how your platform solves the municipal waste bottleneck.</p>
+
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Solution Title</label>
+              <input type="text" id="wiz-solution-title" value="CleanRoute AI - Dynamic Garbage Fleet Rerouting Engine" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white">
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Technical Innovation Summary</label>
+              <textarea rows="4" class="w-full bg-navy-900 border border-slate-700 rounded-xl p-3 text-white">CleanRoute AI connects truck OBD-II ports with live bin ultrasonic telemetry to predict overflow spikes 4 hours in advance, dynamic rerouting fleets to save 22% fuel daily.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Technical Proposal -->
+        <div class="wizard-step hidden" id="wizard-step-4">
+          <h3 class="text-lg font-display font-bold text-white mb-2">Step 4: Technical Proposal & Architecture</h3>
+          <p class="text-xs text-slate-400 mb-6">Deployment stack, cloud sovereignty, and hardware interfaces.</p>
+
+          <div class="space-y-4 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Cloud Host / Data Center</label>
+                <select class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+                  <option>MahaGov Cloud (National Data Center, Pune)</option>
+                  <option>AWS MeitY Empanelled Region (Mumbai)</option>
+                  <option>Azure India West (Pune)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">API Refresh Latency</label>
+                <input type="text" value="Under 250 milliseconds" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              </div>
+            </div>
+            <div>
+              <label class="block text-slate-300 font-semibold mb-1">Hardware / Vehicle Integration Protocol</label>
+              <input type="text" value="Standard OBD-II CAN bus + MQTT over 4G/5G encrypted tunnels" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Pilot Plan & Milestones -->
+        <div class="wizard-step hidden" id="wizard-step-5">
+          <h3 class="text-lg font-display font-bold text-white mb-2">Step 5: 90-Day Pilot Breakdown & Escrow Milestones</h3>
+          <p class="text-xs text-slate-400 mb-6">Allocate requested ₹25,00,000 grant across verifiable output stages.</p>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-3 bg-navy-900/60 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div>
+                <div class="font-bold text-white">Milestone 1: 50 Vehicles Sensor Provisioning (Day 1-20)</div>
+                <div class="text-[10px] text-slate-400">Output: Telemetry bridge verified by Ward Engineer</div>
+              </div>
+              <span class="font-mono font-bold text-govgreen-400">₹6,00,000</span>
+            </div>
+            <div class="p-3 bg-navy-900/60 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div>
+                <div class="font-bold text-white">Milestone 2: Rerouting Engine In-Vivo Deployment (Day 21-60)</div>
+                <div class="text-[10px] text-slate-400">Output: 15% minimum baseline fuel drop attested</div>
+              </div>
+              <span class="font-mono font-bold text-govgreen-400">₹10,00,000</span>
+            </div>
+            <div class="p-3 bg-navy-900/60 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div>
+                <div class="font-bold text-white">Milestone 3: Final Independent Audit & CoEP Report (Day 61-90)</div>
+                <div class="text-[10px] text-slate-400">Output: Final validation certificate issued</div>
+              </div>
+              <span class="font-mono font-bold text-govgreen-400">₹9,00,000</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6: Data / IP / Security -->
+        <div class="wizard-step hidden" id="wizard-step-6">
+          <h3 class="text-lg font-display font-bold text-white mb-2">Step 6: Data Sovereignty & IP Protection</h3>
+          <p class="text-xs text-slate-400 mb-6">Standardized Maharashtra Gov-Tech intellectual property terms.</p>
+
+          <div class="p-4 rounded-2xl bg-navy-950/60 border border-slate-800 space-y-3 text-xs text-slate-300">
+            <div class="flex items-start space-x-2">
+              <i data-lucide="shield" class="w-4 h-4 text-govgreen-400 shrink-0 mt-0.5"></i>
+              <span><strong>Startup IP Ownership:</strong> Startup retains 100% patent, code copyright, and proprietary model weights.</span>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i data-lucide="database" class="w-4 h-4 text-saffron-400 shrink-0 mt-0.5"></i>
+              <span><strong>Municipal Data Sovereignty:</strong> PMC retains exclusive ownership over waste volumes, route geo-logs, and civic reports.</span>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i data-lucide="lock" class="w-4 h-4 text-cyberblue shrink-0 mt-0.5"></i>
+              <span><strong>CERT-In Alignment:</strong> Mandatory adherence to data localization and Indian cybersecurity guidelines.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7: Review & Final Submit -->
+        <div class="wizard-step hidden" id="wizard-step-7">
+          <h3 class="text-lg font-display font-bold text-white mb-2">Step 7: Final Review & Cryptographic Sign-Off</h3>
+          <p class="text-xs text-slate-400 mb-6">Confirm submission under Maharashtra SIH26136 fast-track sandbox guidelines.</p>
+
+          <div class="p-4 rounded-2xl bg-navy-900/60 border border-slate-800 space-y-3 text-xs">
+            <div class="flex justify-between border-b border-slate-800 pb-2">
+              <span class="text-slate-400">Submitting Entity:</span>
+              <span class="font-bold text-white">AgroVision Technologies Pvt Ltd</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-800 pb-2">
+              <span class="text-slate-400">Target Challenge:</span>
+              <span class="font-bold text-govgreen-400">Smart Waste Collection Route AI (Pune)</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-800 pb-2">
+              <span class="text-slate-400">Pilot Budget Requested:</span>
+              <span class="font-bold text-saffron-400 font-mono">₹25,00,000 (3 Escrow Milestones)</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Validation Partner:</span>
+              <span class="font-bold text-white">College of Engineering Pune (CoEP Tech)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wizard Navigation Controls -->
+        <div class="flex items-center justify-between pt-8 border-t border-slate-800 mt-6">
+          <button id="btn-wizard-prev" onclick="prevWizardStep()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition opacity-50 pointer-events-none">
+            Previous Step
+          </button>
+          
+          <button id="btn-wizard-next" onclick="nextWizardStep()" class="px-6 py-2.5 rounded-xl bg-govgreen-500 hover:bg-govgreen-400 text-navy-950 font-bold text-xs transition flex items-center space-x-1.5 shadow-lg">
+            <span>Continue</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 6: SUBMISSION SUCCESS SCREEN -->
+    <section id="screen-success" class="screen-view hidden max-w-2xl mx-auto px-4 py-16 text-center space-y-6">
+      <div class="w-20 h-20 rounded-full bg-govgreen-500/20 text-govgreen-400 border border-govgreen-500/40 flex items-center justify-center mx-auto shadow-2xl animate-pulse">
+        <i data-lucide="check-check" class="w-10 h-10"></i>
+      </div>
+
+      <div class="space-y-2">
+        <span class="text-xs font-mono font-bold uppercase tracking-widest text-govgreen-400">Sandbox Proposal Lodged</span>
+        <h2 class="text-3xl font-display font-extrabold text-white">Application Submitted Successfully</h2>
+        <p class="text-xs text-slate-400 max-w-md mx-auto">
+          Your proposal has entered the Pune Municipal Corporation double-blind technical assessment queue.
+        </p>
+      </div>
+
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 inline-block text-left text-xs space-y-3 w-full max-w-md">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <span class="text-slate-400">Application ID:</span>
+          <span class="font-mono font-extrabold text-saffron-400 text-sm">GIN-MH-2026-00427</span>
+        </div>
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+          <span class="text-slate-400">Timestamp:</span>
+          <span class="font-mono text-slate-200">Live Timestamp (IST)</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-400">Next Step:</span>
+          <span class="font-bold text-cyberblue">Technical Committee Review</span>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-4 pt-4">
+        <button onclick="navigateTo('startup')" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs">
+          Return to Dashboard
+        </button>
+        <button onclick="switchRole('government')" class="px-6 py-3 rounded-xl bg-saffron-500 hover:bg-saffron-400 text-navy-950 font-bold text-xs shadow-lg">
+          Switch to Officer Review
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 7: GOVERNMENT COMMAND CENTER -->
+    <section id="screen-command" class="screen-view hidden max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      
+      <!-- Command Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 rounded-3xl border border-slate-800">
+        <div>
+          <span class="text-xs font-mono font-bold uppercase text-saffron-400 tracking-wider">Department of Urban Development • Maharashtra</span>
+          <h2 class="text-2xl font-display font-bold text-white mt-0.5">Municipal Innovation Command Center</h2>
+          <p class="text-xs text-slate-400">Active Procurement Sandboxes, Proposal Evaluations & Pilot Telemetry.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="openCreateChallengeModal()" class="px-4 py-2.5 rounded-xl bg-saffron-500 hover:bg-saffron-400 text-navy-950 text-xs font-bold transition flex items-center space-x-2 shadow-lg">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>+ Create Innovation Challenge</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Top KPI Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Dept Challenges</span>
+          <div class="text-2xl font-display font-bold text-saffron-400 mt-1">24</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Total Proposals</span>
+          <div class="text-2xl font-display font-bold text-cyberblue mt-1">186</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Active Field Pilots</span>
+          <div class="text-2xl font-display font-bold text-govgreen-400 mt-1">42</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Validated Pilots</span>
+          <div class="text-2xl font-display font-bold text-purple-400 mt-1">17</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Scale Ready</span>
+          <div class="text-2xl font-display font-bold text-emerald-400 mt-1">9</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800">
+          <span class="text-[10px] uppercase font-mono text-slate-400">Escrow Committed</span>
+          <div class="text-2xl font-display font-bold text-white mt-1">₹3.2 Cr</div>
+        </div>
+      </div>
+
+      <!-- 3D Pipeline Visualizer -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-bold text-base text-white">Live Department Procurement Pipeline Flow</h3>
+          <span class="text-xs text-govgreen-400 font-mono font-bold">Flow Status: Active</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 text-center text-xs">
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+            <span class="text-xs font-bold text-slate-300 block">24 Challenges</span>
+            <span class="text-[9px] text-slate-500">Problem Framing</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+            <span class="text-xs font-bold text-cyberblue block">186 Received</span>
+            <span class="text-[9px] text-slate-500">Applications</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+            <span class="text-xs font-bold text-saffron-400 block">62 Scored</span>
+            <span class="text-[9px] text-slate-500">Evaluation</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+            <span class="text-xs font-bold text-purple-400 block">48 MOUs</span>
+            <span class="text-[9px] text-slate-500">Shortlisted</span>
+          </div>
+          <div class="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40">
+            <span class="text-xs font-bold text-emerald-400 block">42 Deployed</span>
+            <span class="text-[9px] text-white">Live Pilots</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+            <span class="text-xs font-bold text-slate-300 block">17 Certified</span>
+            <span class="text-[9px] text-slate-500">Validation</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+            <span class="text-xs font-bold text-amber-400 block">11 GeM Orders</span>
+            <span class="text-[9px] text-slate-500">Procurement</span>
+          </div>
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800">
+            <span class="text-xs font-bold text-white block">9 Statewide</span>
+            <span class="text-[9px] text-slate-500">Scale Out</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submitted Applications Review Grid -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-base text-white">Proposals Pending Officer Review</h3>
+            <p class="text-xs text-slate-400">Multi-criteria scoring model with AI-assisted decision support.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded bg-saffron-500/20 text-saffron-400 text-xs font-bold">1 Action Required</span>
+        </div>
+
+        <!-- Evaluation Row for AgroVision -->
+        <div class="p-5 rounded-2xl bg-navy-900/80 border border-slate-800 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center space-x-2">
+                <h4 class="font-bold text-base text-white">AgroVision Technologies</h4>
+                <span class="px-2 py-0.5 rounded bg-cyberblue/20 text-cyberblue font-mono text-[10px]">GIN-MH-2026-00427</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">Applied for: Smart Waste Collection Route AI (Pune Municipal Corp)</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-400">Overall Evaluator Index:</span>
+              <span class="text-xl font-display font-extrabold text-govgreen-400">86.2 / 100</span>
+            </div>
+          </div>
+
+          <!-- Multi-dimensional scoring bars -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+            <div class="p-2.5 rounded-xl bg-navy-950/60 border border-slate-800/80">
+              <span class="text-slate-400 block text-[10px]">Technical Feasibility</span>
+              <span class="font-bold text-white">82 / 100</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-navy-950/60 border border-slate-800/80">
+              <span class="text-slate-400 block text-[10px]">Innovation Uniqueness</span>
+              <span class="font-bold text-white">88 / 100</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-navy-950/60 border border-slate-800/80">
+              <span class="text-slate-400 block text-[10px]">Deployment Readiness</span>
+              <span class="font-bold text-white">84 / 100</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-navy-950/60 border border-slate-800/80">
+              <span class="text-slate-400 block text-[10px]">Public Impact</span>
+              <span class="font-bold text-white">91 / 100</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-navy-950/60 border border-slate-800/80">
+              <span class="text-slate-400 block text-[10px]">Cost Realism</span>
+              <span class="font-bold text-white">86 / 100</span>
+            </div>
+          </div>
+
+          <!-- Officer Action Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800 text-xs">
+            <div class="flex items-center space-x-2 text-slate-400">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-cyberblue"></i>
+              <span>AI Support Note: High probability of fuel reduction. Recommended for 50-truck sandbox.</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="showToast('Clarification questionnaire dispatched to AgroVision.', 'info')" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition">Request Clarification</button>
+              <button onclick="approvePilotProposal()" class="px-4 py-1.5 rounded-lg bg-govgreen-500 hover:bg-govgreen-400 text-navy-950 font-bold transition flex items-center space-x-1 shadow-lg">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                <span>Shortlist & Sanction Pilot</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 8: PILOT MANAGEMENT DASHBOARD WITH 3D TELEMETRY -->
+    <section id="screen-pilot" class="screen-view hidden max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      
+      <!-- Pilot Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 rounded-3xl border border-slate-800">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-0.5 rounded bg-govgreen-500/20 text-govgreen-400 font-mono text-xs font-bold">PILOT STATUS: ACTIVE SANDBOX</span>
+            <span class="text-xs text-slate-400">Day 58 of 90</span>
+          </div>
+          <h2 class="text-2xl font-display font-bold text-white mt-1">Smart Waste Route Optimization Pilot</h2>
+          <p class="text-xs text-slate-400">Pune Municipal Corporation • Testing Ground: Zone 3 (Aundh-Baner-Kothrud)</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('validation')" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-lg">
+            <i data-lucide="file-check" class="w-4 h-4"></i>
+            <span>Open Independent Validation Center</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Circular Progress & Live Field KPIs -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <!-- 3D Circular Progress Card -->
+        <div class="lg:col-span-4 glass-card p-8 rounded-3xl border border-slate-800 flex flex-col items-center text-center space-y-4">
+          <div class="relative w-44 h-44 flex items-center justify-center">
+            <!-- SVG Circular Gauge -->
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="transparent" stroke="#1E293B" stroke-width="8" />
+              <circle cx="50" cy="50" r="42" fill="transparent" stroke="#10B981" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="84" stroke-linecap="round" class="transition-all duration-1000" />
+            </svg>
+            <div class="absolute flex flex-col items-center justify-center">
+              <span class="text-4xl font-display font-extrabold text-white">68%</span>
+              <span class="text-[10px] uppercase font-mono text-govgreen-400 font-bold">Pilot Progress</span>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="font-bold text-sm text-white">58 / 90 Days Completed</h4>
+            <p class="text-xs text-slate-400 mt-1">Telemetry collected from 140 tippers & 300 volume bin sensors.</p>
+          </div>
+        </div>
+
+        <!-- 4 Key Telemetry Metrics -->
+        <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-2 gap-4">
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-2">
+            <span class="text-xs font-mono uppercase text-slate-400">Route Collection Efficiency</span>
+            <div class="text-3xl font-display font-extrabold text-govgreen-400">+32.4%</div>
+            <p class="text-xs text-slate-400">Target baseline was &gt;25%. Current performance exceeds SLA.</p>
+          </div>
+
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-2">
+            <span class="text-xs font-mono uppercase text-slate-400">Fleet Fuel Consumption</span>
+            <div class="text-3xl font-display font-extrabold text-cyberblue">-18.6%</div>
+            <p class="text-xs text-slate-400">Saving PMC ₹4.2 Lakhs in monthly diesel expenditure.</p>
+          </div>
+
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-2">
+            <span class="text-xs font-mono uppercase text-slate-400">Missed Morning Pickups</span>
+            <div class="text-3xl font-display font-extrabold text-saffron-400">-41.2%</div>
+            <p class="text-xs text-slate-400">Predictive overflow alerts prevented 412 civic overflows.</p>
+          </div>
+
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-2">
+            <span class="text-xs font-mono uppercase text-slate-400">Citizen Complaints (PMC App)</span>
+            <div class="text-3xl font-display font-extrabold text-purple-400">-27.0%</div>
+            <p class="text-xs text-slate-400">Verified through Pune Municipal Care grievance log.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Interactive Milestone Escrow Release Table -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-base text-white">Escrow Milestone Verification & Disbursal Table</h3>
+            <p class="text-xs text-slate-400">Automatic payment release triggered by verified IoT / field telemetry.</p>
+          </div>
+          <span class="font-mono text-xs font-bold text-govgreen-400">Total Sanctioned: ₹25,00,000</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-navy-900/80 text-slate-400 font-mono text-[10px] uppercase">
+              <tr>
+                <th class="p-3">Stage</th>
+                <th class="p-3">Deliverable / Objective</th>
+                <th class="p-3">Amount</th>
+                <th class="p-3">Audit Evidence</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80 text-slate-300">
+              <tr>
+                <td class="p-3 font-bold text-white">Milestone 1</td>
+                <td class="p-3">Initial sensor deployment & baseline route study</td>
+                <td class="p-3 font-mono font-bold text-govgreen-400">₹6,00,000</td>
+                <td class="p-3">Ward Engineer Attestation</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-govgreen-500/20 text-govgreen-400 text-[10px] font-bold">Disbursed</span></td>
+                <td class="p-3 text-right"><span class="text-slate-500 text-[11px]">Settled</span></td>
+              </tr>
+              <tr>
+                <td class="p-3 font-bold text-white">Milestone 2</td>
+                <td class="p-3">Mid-pilot live rerouting across 140 trucks</td>
+                <td class="p-3 font-mono font-bold text-govgreen-400">₹10,00,000</td>
+                <td class="p-3">Telemetric Fuel Logs (-18%)</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-govgreen-500/20 text-govgreen-400 text-[10px] font-bold">Disbursed</span></td>
+                <td class="p-3 text-right"><span class="text-slate-500 text-[11px]">Settled</span></td>
+              </tr>
+              <tr class="bg-saffron-500/5">
+                <td class="p-3 font-bold text-white">Milestone 3</td>
+                <td class="p-3">Final validation audit & statewide scale blueprint</td>
+                <td class="p-3 font-mono font-bold text-saffron-400">₹9,00,000</td>
+                <td class="p-3">CoEP Independent Audit</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-saffron-500/20 text-saffron-400 text-[10px] font-bold">Escrow Locked</span></td>
+                <td class="p-3 text-right">
+                  <button onclick="showToast('Final milestone escrow requires Independent Validation sign-off.', 'info')" class="px-3 py-1 rounded-lg bg-saffron-500 hover:bg-saffron-400 text-navy-950 font-bold text-[10px]">
+                    Release Audit Gate
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 9: INDEPENDENT VALIDATION CENTER -->
+    <section id="screen-validation" class="screen-view hidden max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      
+      <!-- Validation Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-6 rounded-3xl border border-slate-800">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-mono text-xs font-bold">INDEPENDENT VALIDATION GATE</span>
+            <span class="text-xs text-slate-400">Auditor: College of Engineering Pune (CoEP Tech)</span>
+          </div>
+          <h2 class="text-2xl font-display font-bold text-white mt-1">Pilot Performance & Evidence Certification</h2>
+          <p class="text-xs text-slate-400">SIH26136 requirement: Third-party evaluation before public procurement transition.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('scale')" class="px-4 py-2.5 rounded-xl bg-govgreen-500 hover:bg-govgreen-400 text-navy-950 text-xs font-bold transition flex items-center space-x-1.5 shadow-lg">
+            <span>Proceed to Scale-Up Assessment</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scorecard Overview -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        
+        <div class="lg:col-span-4 glass-card p-8 rounded-3xl border border-purple-500/30 text-center space-y-4">
+          <span class="text-xs font-mono font-bold uppercase text-purple-400">Overall Pilot Evidence Score</span>
+          <div class="text-6xl font-display font-extrabold text-white">87<span class="text-2xl text-purple-400">%</span></div>
+          <div class="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
+            <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+            <span>Validated for Public Scale</span>
+          </div>
+          <p class="text-xs text-slate-400 pt-2 border-t border-slate-800">
+            Audit executed across 50 municipal wards over 60 days of continuous live vehicle operation.
+          </p>
+        </div>
+
+        <!-- 5-Point Validation Checklist -->
+        <div class="lg:col-span-8 glass-card p-6 rounded-3xl border border-slate-800 space-y-3 text-xs">
+          <h3 class="font-display font-bold text-base text-white mb-2">Auditor Dimension Checklist</h3>
+
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+              <i data-lucide="check-circle" class="w-4 h-4 text-govgreen-400"></i>
+              <div>
+                <span class="font-bold text-white block">1. KPI Target Realization</span>
+                <span class="text-[10px] text-slate-400">+32% efficiency verified against odometer readings.</span>
+              </div>
+            </div>
+            <span class="font-bold text-govgreen-400 font-mono">Verified (Pass)</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+              <i data-lucide="check-circle" class="w-4 h-4 text-govgreen-400"></i>
+              <div>
+                <span class="font-bold text-white block">2. Technical & Cybersecurity Audit</span>
+                <span class="text-[10px] text-slate-400">Zero unencrypted data transfers. CERT-In compliance pass.</span>
+              </div>
+            </div>
+            <span class="font-bold text-govgreen-400 font-mono">Verified (Pass)</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+              <i data-lucide="check-circle" class="w-4 h-4 text-govgreen-400"></i>
+              <div>
+                <span class="font-bold text-white block">3. Financial Escrow Integrity</span>
+                <span class="text-[10px] text-slate-400">Funds utilized exclusively for sandbox pilot infrastructure.</span>
+              </div>
+            </div>
+            <span class="font-bold text-govgreen-400 font-mono">Verified (Pass)</span>
+          </div>
+
+          <div class="p-3 rounded-xl bg-navy-900/60 border border-slate-800 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+              <i data-lucide="check-circle" class="w-4 h-4 text-govgreen-400"></i>
+              <div>
+                <span class="font-bold text-white block">4. Operator User Feedback</span>
+                <span class="text-[10px] text-slate-400">4.8 / 5 satisfaction rating from 65 municipal tipper drivers.</span>
+              </div>
+            </div>
+            <span class="font-bold text-govgreen-400 font-mono">Verified (Pass)</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 10: SCALE-UP ASSESSMENT & PROCUREMENT PATHWAY -->
+    <section id="screen-scale" class="screen-view hidden max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      
+      <!-- Scale Header -->
+      <div class="glass-card p-6 lg:p-8 rounded-3xl border border-saffron-500/40 relative space-y-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="px-2.5 py-1 rounded bg-saffron-500/20 text-saffron-400 text-xs font-bold">STATE EXPANSION READY</span>
+          <span class="px-2.5 py-1 rounded bg-govgreen-500/20 text-govgreen-400 text-xs font-bold">Maharashtra Rule 149 / GeM Direct Route</span>
+        </div>
+
+        <h1 class="text-3xl font-display font-extrabold text-white">
+          Statewide Scale-Up Assessment: CleanRoute AI
+        </h1>
+
+        <p class="text-sm text-slate-300 max-w-3xl font-light">
+          Having satisfied all rigorous third-party KPI validations in Pune, the solution qualifies for preferred procurement across Maharashtra's 27 Municipal Corporations without repeating redundant pilot tenders.
+        </p>
+      </div>
+
+      <!-- Decision Matrix -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-govgreen-500/20 text-govgreen-400 flex items-center justify-center font-bold">
+            <i data-lucide="award" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-display font-bold text-base text-white">GeM State Catalog Listing</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Auto-generate validated product specification on Government e-Marketplace (GeM) with pre-negotiated volume ceilings.
+          </p>
+          <span class="inline-block text-[11px] font-bold text-govgreen-400">Procurement Pathway: Enabled</span>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-saffron-500/20 text-saffron-400 flex items-center justify-center font-bold">
+            <i data-lucide="map" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-display font-bold text-base text-white">Replication Hotspots</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Immediate adoption orders queued for Nagpur Municipal Corp (NMC) and Chhatrapati Sambhajinagar Smart City.
+          </p>
+          <span class="inline-block text-[11px] font-bold text-saffron-400">Expansion Target: 1,800 Trucks</span>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl border border-slate-800 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-cyberblue/20 text-cyberblue flex items-center justify-center font-bold">
+            <i data-lucide="trending-up" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-display font-bold text-base text-white">State Economic Benefit</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Estimated statewide municipal fuel savings of ₹38 Crores annually alongside 12,000 MT CO2 reduction.
+          </p>
+          <span class="inline-block text-[11px] font-bold text-cyberblue">Audited ROI: 4.8x in Year 1</span>
+        </div>
+
+      </div>
+
+      <!-- Action Button to Passport -->
+      <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h4 class="font-bold text-white text-base">Generate Digital Innovation Credential</h4>
+          <p class="text-xs text-slate-400">Add this certified state pilot achievement to AgroVision's verifiable Innovation Passport.</p>
+        </div>
+        <button onclick="navigateTo('passport')" class="px-6 py-3 rounded-xl bg-saffron-500 hover:bg-saffron-400 text-navy-950 font-bold text-xs shadow-lg transition">
+          Open Digital Innovation Passport
+        </button>
+      </div>
+    </section>
+
+    <!-- SCREEN 11: DIGITAL INNOVATION PASSPORT -->
+    <section id="screen-passport" class="screen-view hidden max-w-4xl mx-auto px-4 py-8 space-y-8">
+      
+      <div class="text-center max-w-xl mx-auto space-y-2">
+        <span class="text-xs font-mono font-bold uppercase tracking-widest text-cyberblue">Verifiable Startup Credentials</span>
+        <h2 class="text-3xl font-display font-bold text-white">Digital Innovation Passport</h2>
+        <p class="text-xs text-slate-400">A single tamper-evident digital credential for verified government procurement track records.</p>
+      </div>
+
+      <!-- High-End 3D Digital Passport Card -->
+      <div class="glass-card p-8 rounded-3xl border-2 border-cyberblue/40 relative overflow-hidden shadow-2xl space-y-6">
+        <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-cyberblue/10 blur-3xl pointer-events-none"></div>
+
+        <!-- Passport Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+          <div class="flex items-center space-x-4">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-saffron-500 via-govgreen-500 to-cyberblue p-0.5 shadow-xl">
+              <div class="w-full h-full bg-navy-950 rounded-[14px] flex items-center justify-center font-display font-bold text-xl text-white">
+                AV
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h3 class="text-xl font-display font-bold text-white">AgroVision Technologies</h3>
+                <i data-lucide="check-circle" class="w-4 h-4 text-govgreen-400 fill-govgreen-400/20"></i>
+              </div>
+              <p class="text-xs text-slate-400 font-mono mt-0.5">PASSPORT ID: MH-INNOV-882190-2026</p>
+            </div>
+          </div>
+
+          <!-- Stylized QR Code Visual -->
+          <div class="flex items-center space-x-3 bg-navy-900/80 p-2.5 rounded-xl border border-slate-700/60 shrink-0">
+            <div class="w-14 h-14 bg-white p-1 rounded-lg flex flex-wrap gap-0.5">
+              <!-- Geometric QR representation -->
+              <div class="w-5 h-5 bg-black"></div><div class="w-2 h-2 bg-black ml-auto"></div>
+              <div class="w-2 h-2 bg-black mt-auto"></div><div class="w-5 h-5 bg-black ml-auto mt-auto"></div>
+            </div>
+            <div class="text-[10px] font-mono text-slate-400">
+              <span class="block text-white font-bold">STATE VERIFIED</span>
+              <span>Scan to authenticate on blockchain registry</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Passport Credentials Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">DPIIT Status</span>
+            <span class="font-bold text-govgreen-400">Active (DIPP98231)</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">Completed State Pilots</span>
+            <span class="font-bold text-white">2 Sanctioned (1 Validated)</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">Audited Efficiency</span>
+            <span class="font-bold text-cyberblue">+32.4% Verified</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-mono">GeM Scale Status</span>
+            <span class="font-bold text-saffron-400">Rule 149 Empanelled</span>
+          </div>
+        </div>
+
+        <!-- Verified Badges -->
+        <div class="pt-4 border-t border-slate-800 space-y-2">
+          <span class="text-[10px] font-mono uppercase text-slate-400 font-bold block">Verified Government Endorsements</span>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="px-3 py-1 rounded-lg bg-navy-900 border border-slate-700 text-slate-200">PMC Urban Tech (Pune)</span>
+            <span class="px-3 py-1 rounded-lg bg-navy-900 border border-slate-700 text-slate-200">College of Engineering Pune (Audit)</span>
+            <span class="px-3 py-1 rounded-lg bg-navy-900 border border-slate-700 text-slate-200">Maharashtra Innovation Society (MSInS)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- FLOATING AI INNOVATION COPILOT INTERFACE -->
+  <!-- ========================================================================= -->
+  <div id="copilot-widget" class="fixed bottom-6 right-6 z-40 flex flex-col items-end">
+    
+    <!-- Chat Window Container -->
+    <div id="copilot-window" class="hidden mb-3 w-80 sm:w-96 glass-card rounded-3xl border border-cyberblue/40 shadow-2xl overflow-hidden flex flex-col backdrop-blur-2xl transition-all">
+      
+      <!-- Copilot Header -->
+      <div class="bg-gradient-to-r from-navy-900 to-navy-800 p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-cyberblue/20 text-cyberblue flex items-center justify-center font-bold border border-cyberblue/30">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white flex items-center space-x-1.5">
+              <span>GovInnovate Copilot</span>
+              <span class="px-1.5 py-0.2 rounded bg-cyberblue/20 text-cyberblue text-[9px] font-mono">AI ASSIST</span>
+            </div>
+            <p class="text-[10px] text-slate-400">Decision-Support & Sandbox Guidance</p>
+          </div>
+        </div>
+        <button onclick="toggleCopilot()" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Chat Body -->
+      <div id="copilot-messages" class="p-4 space-y-3 max-h-72 overflow-y-auto text-xs text-slate-200 font-sans">
+        <div class="p-3 rounded-2xl bg-navy-950/80 border border-slate-800 space-y-1.5">
+          <div class="text-[10px] font-mono text-cyberblue font-bold">GovInnovate Copilot</div>
+          <p class="text-xs leading-relaxed">
+            Hello! I am your AI Sandbox Copilot. I analyze government problem statements, review proposals against public evaluation rubrics, and guide pilot compliance.
+          </p>
+          <span class="block text-[9px] text-slate-500 italic">Note: AI acts strictly as decision support, not legal procurement authority.</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Pills -->
+      <div class="p-2 border-t border-slate-800/80 bg-navy-950/40 flex flex-wrap gap-1.5 text-[10px]">
+        <button onclick="askCopilotPredefined('How can I strengthen my proposal KPIs?')" class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Strengthen KPIs</button>
+        <button onclick="askCopilotPredefined('Explain Rule 149 scale pathway.')" class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Rule 149 Scale</button>
+        <button onclick="askCopilotPredefined('What are the data sovereignty requirements?')" class="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Data Sovereignty</button>
+      </div>
+
+      <!-- Chat Input -->
+      <div class="p-2.5 border-t border-slate-800 bg-navy-950/80 flex items-center space-x-2">
+        <input type="text" id="copilot-input" onkeydown="if(event.key === 'Enter') sendCopilotMessage()" placeholder="Ask about challenges, sandbox rules..." class="flex-1 bg-navy-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyberblue">
+        <button onclick="sendCopilotMessage()" class="p-2 rounded-xl bg-cyberblue text-navy-950 font-bold hover:bg-sky-300 transition">
+          <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Copilot Floating Toggle Button -->
+    <button onclick="toggleCopilot()" class="p-3.5 rounded-2xl bg-gradient-to-r from-cyberblue to-blue-600 text-navy-950 font-bold shadow-2xl shadow-sky-500/30 hover:scale-105 transition-all flex items-center space-x-2">
+      <i data-lucide="bot" class="w-5 h-5 text-navy-950"></i>
+      <span class="text-xs font-bold font-sans tracking-wide hidden sm:inline">AI Copilot</span>
+    </button>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CREATE INNOVATION CHALLENGE (GOVERNMENT WORKFLOW) -->
+  <!-- ========================================================================= -->
+  <div id="modal-create-challenge" class="hidden fixed inset-0 z-50 bg-navy-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-2xl rounded-3xl border border-saffron-500/40 p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-[10px] font-mono uppercase text-saffron-400 font-bold">Government Department Sandbox Setup</span>
+          <h3 class="text-xl font-display font-bold text-white">Create New Innovation Challenge</h3>
+        </div>
+        <button onclick="closeCreateChallengeModal()" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Problem Title</label>
+          <input type="text" id="new-ch-title" placeholder="e.g. AI-driven Water Leakage Detection in Urban Mains" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">State Department</label>
+            <select id="new-ch-dept" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              <option>Urban Development</option>
+              <option>Water Resources</option>
+              <option>Public Health</option>
+              <option>Agriculture</option>
+              <option>Transport</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">District / Location</label>
+            <select id="new-ch-dist" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3 py-2 text-white">
+              <option>Pune</option>
+              <option>Mumbai</option>
+              <option>Nagpur</option>
+              <option>Nashik</option>
+              <option>Chhatrapati Sambhajinagar</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Pilot Grant Budget (₹)</label>
+            <input type="text" id="new-ch-budget" placeholder="e.g. ₹20,00,000" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Pilot Duration (Days)</label>
+            <input type="text" id="new-ch-duration" placeholder="e.g. 90 Days" class="w-full bg-navy-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Problem Description & Measurable KPI</label>
+          <textarea rows="3" id="new-ch-desc" placeholder="Describe the pain point and target quantifiable metric (e.g. reduce non-revenue water loss by 30%)..." class="w-full bg-navy-900 border border-slate-700 rounded-xl p-3 text-white"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">
+        <button onclick="closeCreateChallengeModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700">Cancel</button>
+        <button onclick="saveAndPublishChallenge()" class="px-6 py-2.5 rounded-xl bg-saffron-500 hover:bg-saffron-400 text-navy-950 font-bold text-xs shadow-lg transition">Publish Challenge to Sandbox</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT CONTROLLERS & 3D ENGINE -->
+  <script>
+    // --- 1. DATA REPOSITORY ---
+    const initialChallenges = [
+      {
+        id: "CH-MH-2026-081",
+        title: "Smart Waste Collection Route Optimization Using AI & IoT",
+        dept: "Urban Development",
+        dist: "Pune",
+        budget: "₹25 Lakhs",
+        duration: "90 Days",
+        status: "Open",
+        skills: ["AI Rerouting", "IoT Sensors", "Fleet Telemetry"],
+        desc: "Optimize municipal sanitation vehicle schedules and routes in Pune using live bin telemetry to reduce fuel by 20%."
+      },
+      {
+        id: "CH-MH-2026-044",
+        title: "AI Crop Disease Satellite Sentinel for Cotton & Soybean",
+        dept: "Agriculture",
+        dist: "Nashik",
+        budget: "₹18 Lakhs",
+        duration: "120 Days",
+        status: "Open",
+        skills: ["Satellite Vision", "Edge AI", "Crop Pathology"],
+        desc: "Early pest attack detection in Nashik and Vidarbha farms using high-resolution multispectral feeds."
+      },
+      {
+        id: "CH-MH-2026-102",
+        title: "Intelligent Acoustic Water Leakage Detection in Urban Mains",
+        dept: "Water Resources",
+        dist: "Nagpur",
+        budget: "₹30 Lakhs",
+        duration: "90 Days",
+        status: "Open",
+        skills: ["Acoustic Sensors", "Digital Twin", "SCADA"],
+        desc: "Pinpoint non-revenue subterranean distribution pipe breaches in Nagpur before asphalt subsidence."
+      },
+      {
+        id: "CH-MH-2026-119",
+        title: "Rural Tele-ICU Drone Diagnostic Relay Network",
+        dept: "Public Health",
+        dist: "Chhatrapati Sambhajinagar",
+        budget: "₹35 Lakhs",
+        duration: "90 Days",
+        status: "Open",
+        skills: ["Drone BVLOS", "Tele-ICU", "Edge Telemetry"],
+        desc: "Relay diagnostic blood samples and live ICU telemetry across 45 primary health centers (PHCs)."
+      },
+      {
+        id: "CH-MH-2026-057",
+        title: "Adaptive Traffic Signal Flow Control with Computer Vision",
+        dept: "Urban Development",
+        dist: "Mumbai",
+        budget: "₹40 Lakhs",
+        duration: "120 Days",
+        status: "Open",
+        skills: ["Edge CV", "Traffic Micro-Sim", "V2X"],
+        desc: "Eliminate gridlock at 20 major Western Express Highway junctions through real-time traffic signal optimization."
+      },
+      {
+        id: "CH-MH-2026-090",
+        title: "Solar Irrigation Micro-Grid Grid Energy Ledger",
+        dept: "Agriculture",
+        dist: "Kolhapur",
+        budget: "₹15 Lakhs",
+        duration: "60 Days",
+        status: "Open",
+        skills: ["Smart Inverters", "P2P Solar", "IoT"],
+        desc: "Allow rural solar pump owners in Western Maharashtra to bank surplus kilowatt-hours into local cooperative cold storage grids."
+      }
+    ];
+
+    let challenges = [...initialChallenges];
+    let activeSector = "All";
+
+    // --- 2. DISTRICT TELEMETRY DATA ---
+    const districtData = {
+      "Pune": { name: "Pune Smart Sandbox", corp: "PMC & PCMC", challenges: "28 Open", startups: "94 Startups", pilots: "16 Active", validated: "7 Ready for GeM" },
+      "Mumbai": { name: "Mumbai Metropolitan MMR Sandbox", corp: "BMC & MMRDA", challenges: "34 Open", startups: "162 Startups", pilots: "22 Active", validated: "11 Ready for GeM" },
+      "Nagpur": { name: "Nagpur Vidarbha Innovation Node", corp: "NMC & Smart City", challenges: "18 Open", startups: "58 Startups", pilots: "12 Active", validated: "4 Ready for GeM" },
+      "Nashik": { name: "Nashik Agri-Tech Sandbox", corp: "NMC & Zilla Parishad", challenges: "14 Open", startups: "46 Startups", pilots: "9 Active", validated: "3 Ready for GeM" },
+      "Chhatrapati Sambhajinagar": { name: "Marathwada Innovation Cluster", corp: "ASCDCL", challenges: "12 Open", startups: "38 Startups", pilots: "7 Active", validated: "2 Ready for GeM" },
+      "Kolhapur": { name: "South Maharashtra Agri-Manufacturing Hub", corp: "KMC", challenges: "9 Open", startups: "28 Startups", pilots: "5 Active", validated: "2 Ready for GeM" }
+    };
+
+    // --- 3. 3D BACKGROUND ENGINE (Three.js) ---
+    function init3DBackground() {
+      const container = document.getElementById('canvas-container');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+      camera.position.z = 250;
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(renderer.domElement);
+
+      // Create Particle Constellation
+      const geometry = new THREE.BufferGeometry();
+      const particleCount = 180;
+      const positions = new Float32Array(particleCount * 3);
+
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 600;
+        positions[i + 1] = (Math.random() - 0.5) * 600;
+        positions[i + 2] = (Math.random() - 0.5) * 400;
+      }
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+      const material = new THREE.PointsMaterial({
+        color: 0x10B981,
+        size: 2.5,
+        transparent: true,
+        opacity: 0.7
+      });
+
+      const particleSystem = new THREE.Points(geometry, material);
+      scene.add(particleSystem);
+
+      // Animation Loop
+      function animate() {
+        requestAnimationFrame(animate);
+        particleSystem.rotation.y += 0.0006;
+        particleSystem.rotation.x += 0.0003;
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    // --- 4. NAVIGATION ROUTER ---
+    function navigateTo(screenId) {
+      document.querySelectorAll('.screen-view').forEach(s => s.classList.add('hidden'));
+      const target = document.getElementById(`screen-${screenId}`);
+      if (target) {
+        target.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      lucide.createIcons();
+    }
+
+    function switchRole(role) {
+      const label = document.getElementById('current-role-label');
+      if (role === 'startup') {
+        label.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyberblue animate-pulse"></span><span>AgroVision (Startup)</span>`;
+        navigateTo('startup');
+        showToast('Switched to AgroVision Startup Persona.', 'info');
+      } else if (role === 'government') {
+        label.innerHTML = `<span class="w-2 h-2 rounded-full bg-saffron-400 animate-pulse"></span><span>Urban Dev (Officer)</span>`;
+        navigateTo('command');
+        showToast('Switched to Municipal Government Officer Persona.', 'info');
+      } else if (role === 'admin') {
+        label.innerHTML = `<span class="w-2 h-2 rounded-full bg-govgreen-400 animate-pulse"></span><span>MSInS (Admin)</span>`;
+        navigateTo('landing');
+        showToast('Switched to Innovation Society Admin Persona.', 'info');
+      }
+    }
+
+    // --- 5. DISTRICT MAP INTERACTIVITY ---
+    function selectDistrict(distName) {
+      const data = districtData[distName];
+      if (!data) return;
+
+      document.getElementById('dist-name').textContent = data.name;
+      document.getElementById('dist-corp').textContent = data.corp;
+      document.getElementById('dist-challenges').textContent = data.challenges;
+      document.getElementById('dist-startups').textContent = data.startups;
+      document.getElementById('dist-pilots').textContent = data.pilots;
+      document.getElementById('dist-validated').textContent = data.validated;
+
+      showToast(`Selected Sandbox: ${data.name}`, 'info');
+    }
+
+    // --- 6. CHALLENGES MARKETPLACE RENDERING ---
+    function renderChallenges() {
+      const grid = document.getElementById('challenges-grid');
+      grid.innerHTML = '';
+
+      const query = (document.getElementById('challenge-search')?.value || '').toLowerCase();
+
+      const filtered = challenges.filter(c => {
+        const matchSector = activeSector === "All" || c.dept === activeSector;
+        const matchQuery = c.title.toLowerCase().includes(query) || c.skills.some(s => s.toLowerCase().includes(query));
+        return matchSector && matchQuery;
+      });
+
+      filtered.forEach(c => {
+        const card = document.createElement('div');
+        card.className = "glass-card glass-card-hover p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 group";
+        card.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded bg-saffron-500/10 text-saffron-400 border border-saffron-500/30 text-[10px] font-mono font-bold">${c.dept}</span>
+              <span class="text-xs text-slate-400 flex items-center space-x-1"><i data-lucide="map-pin" class="w-3 h-3 text-govgreen-400"></i><span>${c.dist}</span></span>
+            </div>
+            <h4 class="font-display font-bold text-base text-white group-hover:text-govgreen-400 transition leading-snug">${c.title}</h4>
+            <p class="text-xs text-slate-300 line-clamp-2 font-light">${c.desc}</p>
+            
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${c.skills.map(s => `<span class="px-2 py-0.5 rounded bg-navy-900 border border-slate-700/60 text-[10px] text-slate-300 font-medium">${s}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800/80 space-y-3">
+            <div class="flex justify-between items-center text-xs">
+              <div>
+                <span class="text-[10px] uppercase font-mono text-slate-400 block">Pilot Grant</span>
+                <span class="font-bold text-white">${c.budget}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-mono text-slate-400 block">Duration</span>
+                <span class="font-bold text-govgreen-400">${c.duration}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="navigateTo('challenge-detail')" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">Details</button>
+              <button onclick="startApplicationWizard()" class="py-2 rounded-xl bg-govgreen-500 hover:bg-govgreen-400 text-navy-950 font-bold text-xs shadow transition">Apply Now</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function setSectorFilter(sector) {
+      activeSector = sector;
+      document.querySelectorAll('#sector-filter-buttons button').forEach(b => {
+        b.className = b.textContent.includes(sector)
+          ? "filter-pill active px-3 py-1.5 rounded-lg font-bold bg-govgreen-500 text-navy-950 transition"
+          : "filter-pill px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:bg-slate-800 transition";
+      });
+      renderChallenges();
+    }
+
+    function filterChallenges() {
+      renderChallenges();
+    }
+
+    // --- 7. 7-STEP APPLICATION WIZARD ENGINE ---
+    let currentWizardStep = 1;
+    const totalWizardSteps = 7;
+
+    function startApplicationWizard() {
+      currentWizardStep = 1;
+      updateWizardUI();
+      navigateTo('wizard');
+    }
+
+    function updateWizardUI() {
+      // Show only current step
+      for (let i = 1; i <= totalWizardSteps; i++) {
+        const stepEl = document.getElementById(`wizard-step-${i}`);
+        const pillEl = document.getElementById(`pill-${i}`);
+        if (stepEl) {
+          stepEl.classList.toggle('hidden', i !== currentWizardStep);
+        }
+        if (pillEl) {
+          pillEl.className = i <= currentWizardStep ? "step-pill h-1.5 rounded-full bg-govgreen-500 transition-all" : "step-pill h-1.5 rounded-full bg-slate-800 transition-all";
+        }
+      }
+
+      document.getElementById('step-counter-text').textContent = `Step ${currentWizardStep} of ${totalWizardSteps}`;
+
+      const prevBtn = document.getElementById('btn-wizard-prev');
+      const nextBtn = document.getElementById('btn-wizard-next');
+
+      if (currentWizardStep === 1) {
+        prevBtn.classList.add('opacity-50', 'pointer-events-none');
+      } else {
+        prevBtn.classList.remove('opacity-50', 'pointer-events-none');
+      }
+
+      if (currentWizardStep === totalWizardSteps) {
+        nextBtn.innerHTML = `<span>Submit Proposal</span><i data-lucide="check" class="w-4 h-4"></i>`;
+        nextBtn.className = "px-6 py-2.5 rounded-xl bg-saffron-500 hover:bg-saffron-400 text-navy-950 font-bold text-xs transition flex items-center space-x-1.5 shadow-lg";
+      } else {
+        nextBtn.innerHTML = `<span>Continue</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+        nextBtn.className = "px-6 py-2.5 rounded-xl bg-govgreen-500 hover:bg-govgreen-400 text-navy-950 font-bold text-xs transition flex items-center space-x-1.5 shadow-lg";
+      }
+
+      lucide.createIcons();
+    }
+
+    function nextWizardStep() {
+      if (currentWizardStep < totalWizardSteps) {
+        currentWizardStep++;
+        updateWizardUI();
+      } else {
+        // Final submit
+        navigateTo('success');
+        showToast('Application GIN-MH-2026-00427 lodged in state registry.', 'success');
+      }
+    }
+
+    function prevWizardStep() {
+      if (currentWizardStep > 1) {
+        currentWizardStep--;
+        updateWizardUI();
+      }
+    }
+
+    // --- 8. AI COPILOT DECISION SUPPORT ---
+    let copilotOpen = false;
+
+    function toggleCopilot() {
+      copilotOpen = !copilotOpen;
+      const windowEl = document.getElementById('copilot-window');
+      windowEl.classList.toggle('hidden', !copilotOpen);
+      if (copilotOpen) {
+        document.getElementById('copilot-input').focus();
+      }
+    }
+
+    function askCopilotAboutChallenge() {
+      if (!copilotOpen) toggleCopilot();
+      askCopilotPredefined("How can I tailor my proposal for Pune Smart Waste Optimization?");
+    }
+
+    function askCopilotPredefined(promptText) {
+      appendCopilotMessage('user', promptText);
+      generateCopilotResponse(promptText);
+    }
+
+    function sendCopilotMessage() {
+      const input = document.getElementById('copilot-input');
+      const text = input.value.trim();
+      if (!text) return;
+      appendCopilotMessage('user', text);
+      input.value = '';
+      generateCopilotResponse(text);
+    }
+
+    function appendCopilotMessage(sender, text) {
+      const box = document.getElementById('copilot-messages');
+      const msg = document.createElement('div');
+      msg.className = sender === 'user'
+        ? "p-2.5 rounded-xl bg-slate-800 text-white text-xs ml-6 text-right"
+        : "p-3 rounded-2xl bg-navy-950/80 border border-slate-800 space-y-1 text-xs text-slate-200 mr-4";
+      
+      if (sender === 'ai') {
+        msg.innerHTML = `<div class="text-[10px] font-mono text-cyberblue font-bold">GovInnovate Copilot</div><p class="leading-relaxed">${text}</p>`;
+      } else {
+        msg.textContent = text;
+      }
+      box.appendChild(msg);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function generateCopilotResponse(prompt) {
+      setTimeout(() => {
+        let reply = "Your technical proposal aligns with Maharashtra Sandbox criteria. To increase evaluation score: 1) Specify baseline fuel telemetry verification via OBD-II, 2) Define 15-day fallback protocols, and 3) Explicitly confirm that data sovereignty remains with Pune Municipal Corporation.";
+        if (prompt.toLowerCase().includes('kpi')) {
+          reply = "Recommended KPIs: Define a baseline window (14 days), a vehicle fuel reduction target (>20%), and zero missed bins in high-density wards. CoEP requires non-tamperable sensor streams.";
+        } else if (prompt.toLowerCase().includes('rule 149')) {
+          reply = "Under Rule 149 & State Startup Policy: Startups with validated pilots (>85% score) can transition straight to municipal purchase orders on GeM without redundant pilot tenders.";
+        }
+        appendCopilotMessage('ai', reply);
+      }, 700);
+    }
+
+    // --- 9. SIH GUIDED TOUR (DEMO MODE) ---
+    let tourActive = false;
+    let tourStep = 1;
+
+    const tourSteps = [
+      { step: 1, title: "1. Government Problem Defined", desc: "Urban Development Dept posts Pune waste route bottleneck.", screen: "challenges" },
+      { step: 2, title: "2. Startup Discovers Sandbox", desc: "AgroVision discovers open challenge with waived tender fee.", screen: "challenge-detail" },
+      { step: 3, title: "3. Automated Eligibility Check", desc: "DPIIT certification and IP ownership auto-attested.", screen: "wizard" },
+      { step: 4, title: "4. Proposal Lodged & ID Generated", desc: "Application GIN-MH-2026-00427 recorded cryptographically.", screen: "success" },
+      { step: 5, title: "5. Officer Evaluates Proposal", desc: "Multi-criteria technical evaluation scoring 86.2/100.", screen: "command" },
+      { step: 6, title: "6. Sandboxed Pilot Initialized", desc: "90-day sandbox live across 140 municipal tippers.", screen: "pilot" },
+      { step: 7, title: "7. Live Field Telemetry Reached", desc: "Route efficiency gains hit +32.4% & -18.6% fuel cut.", screen: "pilot" },
+      { step: 8, title: "8. Milestone Escrow Disbursal", desc: "Milestones 1 & 2 released straight to startup bank.", screen: "startup" },
+      { step: 9, title: "9. Third-Party CoEP Audit", desc: "College of Engineering Pune issues 87% certification.", screen: "validation" },
+      { step: 10, title: "10. State Scale-Up Recommendation", desc: "GeM fast-track procurement approved under Rule 149.", screen: "scale" },
+      { step: 11, title: "11. Digital Innovation Passport", desc: "Verifiable state credential minted with tamper-proof QR.", screen: "passport" },
+      { step: 12, title: "12. Complete Ecosystem Impact", desc: "₹24.6 Cr mobilized across 74 active state innovation pilots.", screen: "landing" },
+    ];
+
+    function startSihDemoMode() {
+      tourActive = true;
+      tourStep = 1;
+      document.getElementById('demo-tour-banner').classList.remove('hidden');
+      runTourStep();
+      showToast('SIH 2-Minute Innovation Tour Started!', 'success');
+    }
+
+    function stopSihDemoMode() {
+      tourActive = false;
+      document.getElementById('demo-tour-banner').classList.add('hidden');
+      showToast('Tour exited.', 'info');
+    }
+
+    function nextTourStep() {
+      if (tourStep < tourSteps.length) {
+        tourStep++;
+        runTourStep();
+      } else {
+        stopSihDemoMode();
+        showToast('SIH Innovation Tour Completed!', 'success');
+      }
+    }
+
+    function prevTourStep() {
+      if (tourStep > 1) {
+        tourStep--;
+        runTourStep();
+      }
+    }
+
+    function runTourStep() {
+      const current = tourSteps[tourStep - 1];
+      document.getElementById('tour-step-num').textContent = `${current.step}/12`;
+      document.getElementById('tour-step-title').textContent = current.title;
+      document.getElementById('tour-step-desc').textContent = current.desc;
+
+      navigateTo(current.screen);
+    }
+
+    // --- 10. OFFICER WORKFLOWS (APPROVE / CREATE) ---
+    function approvePilotProposal() {
+      showToast('Proposal GIN-MH-2026-00427 Approved! MOU Dispatched.', 'success');
+      setTimeout(() => navigateTo('pilot'), 1000);
+    }
+
+    function openCreateChallengeModal() {
+      document.getElementById('modal-create-challenge').classList.remove('hidden');
+    }
+
+    function closeCreateChallengeModal() {
+      document.getElementById('modal-create-challenge').classList.add('hidden');
+    }
+
+    function saveAndPublishChallenge() {
+      const title = document.getElementById('new-ch-title').value.trim() || "Intelligent Urban Transit Telemetry";
+      const dept = document.getElementById('new-ch-dept').value;
+      const dist = document.getElementById('new-ch-dist').value;
+      const budget = document.getElementById('new-ch-budget').value || "₹20 Lakhs";
+      const duration = document.getElementById('new-ch-duration').value || "90 Days";
+      const desc = document.getElementById('new-ch-desc').value || "Public governance pilot deployed under state sandbox.";
+
+      challenges.unshift({
+        id: `CH-MH-2026-0${Math.floor(Math.random() * 900 + 100)}`,
+        title,
+        dept,
+        dist,
+        budget,
+        duration,
+        status: "Open",
+        skills: ["IoT Telemetry", "AI Optimization"],
+        desc
+      });
+
+      closeCreateChallengeModal();
+      renderChallenges();
+      showToast('New Innovation Challenge Published to Sandbox!', 'success');
+      navigateTo('challenges');
+    }
+
+    // --- 11. TOAST SYSTEM & UTILITIES ---
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const borderColor = type === 'success' ? 'border-govgreen-500' : type === 'info' ? 'border-cyberblue' : 'border-saffron-500';
+      const icon = type === 'success' ? 'check-circle' : 'info';
+
+      toast.className = `glass-card pointer-events-auto px-4 py-3 rounded-2xl border ${borderColor} shadow-2xl flex items-center space-x-2 text-xs text-white transform translate-y-4 opacity-0 transition-all duration-300`;
+      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-govgreen-400"></i><span>${message}</span>`;
+      
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function toggleNotifications() {
+      showToast('All 4 state sandboxes operating normally. No system alerts.', 'info');
+    }
+
+    function showNodeTooltip(text) {
+      showToast(text, 'info');
+    }
+
+    // --- 12. INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      init3DBackground();
+      renderChallenges();
+      lucide.createIcons();
+
+      // Trigger animated counters
+      document.querySelectorAll('.counter').forEach(c => {
+        const target = +c.getAttribute('data-target');
+        let count = 0;
+        const inc = target / 30;
+        const update = () => {
+          count += inc;
+          if (count < target) {
+            c.innerText = Math.ceil(count);
+            setTimeout(update, 30);
+          } else {
+            c.innerText = target;
+          }
+        };
+        update();
+      });
+    });
+  </script>
+</body>
+</html>
